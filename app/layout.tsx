@@ -1,8 +1,22 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Noto_Sans, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const noto = Noto_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: "normal",
+  display: "swap",
+  variable: "--noto-text",
+});
+
+const notoKR = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: "normal",
+  display: "swap",
+  variable: "--notoKR-text",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,7 +30,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body
+        className={`${noto.variable} ${notoKR.variable} mx-auto max-w-screen-sm`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
