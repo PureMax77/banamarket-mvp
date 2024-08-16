@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
           },
           data: {
             count: 1,
+            isVerified: false,
             token: newToken,
           },
         });
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
         },
         data: {
           count: token.count + 1,
+          isVerified: false,
           token: newToken,
         },
       });

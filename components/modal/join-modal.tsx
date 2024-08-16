@@ -11,15 +11,21 @@ import {
   NAME_MIN_LENGTH,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
+  PhoneNumberRegex,
 } from "@/lib/constants";
 
 export default function JoinModal() {
   const [state, dispatch] = useFormState(createAccount, null);
 
   const [phoneNumber, setPhoneNumber] = useState<string>("010");
-  const [phoneSendText, setPhoneSendText] = useState("인증요청");
-  const [verifyText, setVerifyText] = useState("인증");
+  const [code, setCode] = useState<string>("");
+  const [isPhoneSend, setIsPhoneSend] = useState<boolean>(false);
+  const [isVerified, setIsVerified] = useState<boolean>(false);
   const [isAllCheck, setIsAllCheck] = useState<boolean>(false);
+
+  const [isLoadingReq, setIsLoadingReq] = useState<boolean>(false);
+  const [isLoadingVery, setIsLoadingVery] = useState<boolean>(false);
+
   const [isAdultCheck, setIsAdultCheck] = useState<boolean>(false); // 14세 이상 동의
   const [isTermCheck, setIsTermCheck] = useState<boolean>(false); // 이용약관 동의
   const [isInfoCheck, setIsInfoCheck] = useState<boolean>(false); // 개인정보 동의
@@ -35,12 +41,23 @@ export default function JoinModal() {
   };
 
   const onPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPhoneNumber(e.target.value.toString());
+    setPhoneNumber(e.target.value);
+  };
+  const onCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newCode = e.target.value;
+    if (newCode.length > 6) return;
+    else setCode(newCode);
   };
 
   // 휴대폰인증번호 전송
   const onPhoneSend = async () => {
+    if (!PhoneNumberRegex.test(phoneNumber)) {
+      return alert("잘못된 휴대폰번호입니다.");
+    }
+
     try {
+      setIsLoadingReq(true);
+
       const result = await fetch("/api/sms/sendcode", {
         method: "POST",
         headers: {
@@ -52,6 +69,7 @@ export default function JoinModal() {
       });
 
       if (result.status === 200) {
+        if (!isPhoneSend) setIsPhoneSend(true);
         alert("인증번호를 전송했습니다.");
       } else {
         const { msg } = await result.json();
@@ -59,6 +77,42 @@ export default function JoinModal() {
       }
     } catch (e: any) {
       alert(e.message);
+    } finally {
+      setIsLoadingReq(false);
+    }
+  };
+
+  // 휴대폰번호 인증
+  const onVerifyCode = async () => {
+    if (code.length !== 6) {
+      return alert("인증번호는 6자리입니다.");
+    }
+
+    try {
+      setIsLoadingVery(true);
+
+      const result = await fetch("/api/sms/checkcode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: phoneNumber,
+          code,
+        }),
+      });
+
+      if (result.status === 200) {
+        setIsVerified(true);
+        alert("인증에 성공했습니다.");
+      } else {
+        const { msg } = await result.json();
+        alert(msg);
+      }
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setIsLoadingVery(false);
     }
   };
 
@@ -154,10 +208,16 @@ export default function JoinModal() {
                 onChange={onPhoneChange}
                 placeholder="휴대폰(숫자만 입력)"
                 errors={state?.fieldErrors.phone}
+                disabled={isVerified}
                 required
               />
-              <button className="btn w-24" onClick={onPhoneSend}>
-                {phoneSendText}
+              <button
+                type="button"
+                className="btn w-24"
+                onClick={onPhoneSend}
+                disabled={isVerified || isLoadingReq}
+              >
+                {isLoadingReq ? "요청중..." : "인증요청"}
               </button>
             </div>
             <div className="flex gap-3 w-full">
@@ -165,11 +225,19 @@ export default function JoinModal() {
                 id="noarrow-number-input"
                 name="verifyCode"
                 type="number"
+                value={code}
+                onChange={onCodeChange}
                 placeholder="인증번호(6자리)"
-                min={100000}
-                max={999999}
+                disabled={!isPhoneSend || isVerified}
               />
-              <button className="btn w-24">{verifyText}</button>
+              <button
+                type="button"
+                className="btn w-24"
+                onClick={onVerifyCode}
+                disabled={!isPhoneSend || isVerified || isLoadingVery}
+              >
+                {isLoadingVery ? "인증중..." : "인증"}
+              </button>
             </div>
             <div className="flex flex-col gap-2 py-3 *:flex *:items-center *:gap-2">
               <div>

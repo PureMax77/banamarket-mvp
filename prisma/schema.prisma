@@ -24,6 +24,7 @@ model User {
 model SMSToken {
   id         Int      @id @default(autoincrement())
   phone      String   @unique
+  isVerified Boolean  @default(false)
   count      Int      @default(0)
   token      String
   created_at DateTime @default(now())
