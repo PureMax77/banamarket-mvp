@@ -5,8 +5,9 @@ import {
   MagnifyingGlassIcon,
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
+import { PATH_NAME } from "@/lib/constants";
 
-export default function SignUpArea() {
+export default function JoinArea() {
   return (
     <div className="flex flex-col gap-8">
       <div className="w-full h-px bg-neutral-500"></div>
@@ -21,7 +22,7 @@ export default function SignUpArea() {
       <div className="flex flex-col gap-3">
         <Link
           className="btn bg-neutral-800 hover:bg-neutral-800 text-white flex h-14 items-center justify-center gap-3"
-          href={"/kakao/start"}
+          href={PATH_NAME.JOIN}
         >
           <p className="text-lg font-semibold">
             <span className="text-yellow-300">카카오</span> 1초 회원가입

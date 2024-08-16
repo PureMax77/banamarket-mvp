@@ -10,6 +10,7 @@ datasource db {
 model User {
   id           Int      @id @default(autoincrement())
   username     String   @unique
+  name         String?
   email        String?  @unique
   password     String?
   phone        String?  @unique
@@ -18,4 +19,13 @@ model User {
   avatar_thumb String?
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
+}
+
+model SMSToken {
+  id         Int      @id @default(autoincrement())
+  phone      String   @unique
+  count      Int      @default(0)
+  token      String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }

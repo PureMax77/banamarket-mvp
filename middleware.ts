@@ -15,7 +15,7 @@ const privateOnlyUrls: Routes = {
 // 로그인 됐을 때 들어가지면 안 되는 페이지
 const publicOnlyUrls: Routes = {
   "/login": true,
-  "/create-account": true,
+  "/join": true,
   "/kakao/start": true,
   "/kakao/complete": true,
 };

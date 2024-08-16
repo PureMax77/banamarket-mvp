@@ -14,7 +14,7 @@ const _Input = (
   ref: ForwardedRef<HTMLInputElement>
 ) => {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-full">
       <input
         ref={ref}
         name={name}

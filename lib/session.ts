@@ -2,6 +2,7 @@ import { IKakaoAccount } from "@/types/common";
 import { getIronSession } from "iron-session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { PATH_NAME } from "./constants";
 
 interface SessionContent {
   id?: number;
@@ -45,7 +46,7 @@ export async function getGitAccessToken(
   const accessTokenParams = new URLSearchParams({
     client_id: process.env.KAKAO_CLIENT_ID!,
     grant_type: "authorization_code",
-    redirect_uri: process.env.DOMAIN_URL + "/kakao/complete",
+    redirect_uri: process.env.DOMAIN_URL + PATH_NAME.KAKAO_COMPLETE,
     code,
   }).toString();
   const accessTokenURL = `https://kauth.kakao.com/oauth/token?${accessTokenParams}`;

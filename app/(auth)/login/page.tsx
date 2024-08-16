@@ -2,13 +2,13 @@
 
 import Input from "@/components/input";
 import Button from "@/components/button";
-import { PASSWORD_MIN_LENGTH } from "@/lib/constants";
+import { PASSWORD_MIN_LENGTH, PATH_NAME } from "@/lib/constants";
 import { useFormState } from "react-dom";
 import { login } from "./actions";
 import Link from "next/link";
 import Image from "next/image";
 import KakaoImg from "@/public/kakao48.png";
-import SignUpArea from "@/components/signup-area";
+import JoinArea from "@/components/auth/join-area";
 
 export default function Login() {
   const [state, dispatch] = useFormState(login, null);
@@ -23,7 +23,7 @@ export default function Login() {
       </div>
       <div className="w-full flex flex-col items-center">
         <Link
-          href={"/kakao/start"}
+          href={PATH_NAME.KAKAO_START}
           className="btn flex justify-center items-center bg-yellow-300 hover:bg-yellow-300 w-full h-28"
         >
           <Image src={KakaoImg} alt="kakao_icon" />
@@ -51,7 +51,7 @@ export default function Login() {
         />
         <Button text="로그인" />
       </form> */}
-      <SignUpArea />
+      <JoinArea />
     </div>
   );
 }
