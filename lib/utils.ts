@@ -1,3 +1,5 @@
+import { adjectives, fruitsVegetables } from "./constants";
+
 export function formatToTimeAgo(date: string): string {
   const dayInMs = 1000 * 60 * 60 * 24;
   const time = new Date(date).getTime(); //unix timestamp
@@ -15,4 +17,23 @@ export function formatToWon(price: number): string {
 
 export function genRandomFourNumber() {
   return Math.floor(1000 + Math.random() * 9000);
+}
+
+// 랜덤으로 형용사를 선택하는 함수
+function getRandomAdjective() {
+  const randomIndex = Math.floor(Math.random() * adjectives.length);
+  return adjectives[randomIndex];
+}
+
+// 랜덤으로 과일이나 채소를 선택하는 함수
+function getRandomFruitOrVegetable() {
+  const randomIndex = Math.floor(Math.random() * fruitsVegetables.length);
+  return fruitsVegetables[randomIndex];
+}
+
+// 닉네임 생성
+export function generateNickname() {
+  const adjective = getRandomAdjective();
+  const fruitOrVegetable = getRandomFruitOrVegetable();
+  return `${adjective}${fruitOrVegetable}${genRandomFourNumber().toString()}`;
 }

@@ -13,6 +13,7 @@ import db from "@/lib/db";
 import { z } from "zod";
 import { redirect } from "next/navigation";
 import getSession, { goLogin } from "@/lib/session";
+import { generateNickname } from "@/lib/utils";
 
 // 한글만 포함된 문자열인지 검증하는 정규식
 const koreanRegex = /^[가-힣]+$/;
@@ -24,6 +25,29 @@ const checkPassword = ({
   password: string;
   confirm_password: string;
 }) => password === confirm_password;
+
+// 필수항목 동의 체크
+const checkTerm = ({ adult_check, term_check, info_check }: any) =>
+  !!adult_check && !!term_check && !!info_check;
+
+// 닉네임 생성
+const getUsername = async () => {
+  const username = generateNickname();
+  const user = await db.user.findUnique({
+    where: {
+      username,
+    },
+    select: {
+      id: true,
+    },
+  });
+  if (user) {
+    // 이미 해당 닉네임 중복으로 다시 생성
+    return getUsername();
+  } else {
+    return username;
+  }
+};
 
 const formSchema = z
   .object({
@@ -61,6 +85,10 @@ const formSchema = z
         (phone) => PhoneNumberRegex.test(phone),
         "잘못된 전화번호입니다."
       ),
+    adult_check: z.coerce.boolean(),
+    term_check: z.coerce.boolean(),
+    info_check: z.coerce.boolean(),
+    ad_check: z.coerce.boolean(),
   })
   .superRefine(async ({ email }, ctx) => {
     const user = await db.user.findUnique({
@@ -84,6 +112,59 @@ const formSchema = z
   .refine(checkPassword, {
     message: "비밀번호가 일치하지 않습니다.",
     path: ["confirm_password"], // 에러 발생 지점 설정
+  })
+  .superRefine(async ({ phone }, ctx) => {
+    const smsToken = await db.sMSToken.findUnique({
+      where: {
+        phone,
+      },
+      select: {
+        id: true,
+        isVerified: true,
+        updated_at: true,
+      },
+    });
+
+    // 토큰생성기록 없음
+    if (!smsToken) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "휴대폰 인증이 필요합니다.",
+        path: ["phone"],
+        fatal: true, // 해당 에러 발생시 남은 검증들은 하지 않기 위해
+      });
+      z.NEVER; // 해당 에러 발생시 남은 검증들은 하지 않기 위해
+      return;
+    }
+
+    // 인증요청 5분 Timeout 체크
+    const now = new Date(); // 현재 시간
+    const fiveMinAgo = new Date(now.getTime() - 5 * 60 * 1000); // 현재 시간에서 5분 전
+    // 5분 초과함
+    if (smsToken.updated_at < fiveMinAgo) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "휴대폰 인증이 만료됐습니다. 인증을 다시 시도하세요.",
+        path: ["term_check"], // 인증다하고 만료된 경우를 대비해서
+        fatal: true, // 해당 에러 발생시 남은 검증들은 하지 않기 위해
+      });
+      z.NEVER; // 해당 에러 발생시 남은 검증들은 하지 않기 위해
+      return;
+    }
+
+    if (!smsToken.isVerified) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "휴대폰 인증이 필요합니다.",
+        path: ["phone"],
+        fatal: true, // 해당 에러 발생시 남은 검증들은 하지 않기 위해
+      });
+      z.NEVER; // 해당 에러 발생시 남은 검증들은 하지 않기 위해
+    }
+  })
+  .refine(checkTerm, {
+    message: "필수항목에 동의가 필요합니다.",
+    path: ["term_check"], // 에러 발생 지점 설정
   });
 
 export async function createAccount(prevState: any, formData: FormData) {
@@ -106,17 +187,32 @@ export async function createAccount(prevState: any, formData: FormData) {
   } else {
     // hash password
     const hashedPassword = await bcrypt.hash(result.data.password, 12);
+
+    // getUsername
+    const username = await getUsername();
+
     // save the user to db
     const user = await db.user.create({
       data: {
-        username: result.data.username,
+        username,
+        name: result.data.name,
         email: result.data.email,
         password: hashedPassword,
+        phone: result.data.phone,
+        ad_agree: result.data.ad_check,
       },
       select: {
         id: true,
       },
     });
-    await goLogin(user.id, "/profile");
+
+    // delete smsToken
+    await db.sMSToken.delete({
+      where: {
+        phone: result.data.phone,
+      },
+    });
+
+    await goLogin(user.id, "/");
   }
 }

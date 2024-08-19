@@ -17,6 +17,7 @@ model User {
   kakao_id     String?  @unique
   avatar       String?
   avatar_thumb String?
+  ad_agree     Boolean
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 }

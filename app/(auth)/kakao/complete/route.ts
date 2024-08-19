@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
       avatar: profile_image_url,
       avatar_thumb: thumbnail_image_url,
       ...(has_email && { email }),
+      ad_agree: false, //! 추후 광고수신 동의 데이터 연동 필요
     },
     select: {
       id: true,

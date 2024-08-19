@@ -9,6 +9,7 @@ import { createAccount } from "@/app/(auth)/join/action";
 import {
   NAME_MAX_LENGTH,
   NAME_MIN_LENGTH,
+  OnlyNumberRegex,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
   PhoneNumberRegex,
@@ -41,8 +42,11 @@ export default function JoinModal() {
   };
 
   const onPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPhoneNumber(e.target.value);
+    if (OnlyNumberRegex.test(e.target.value) || e.target.value === "") {
+      setPhoneNumber(e.target.value);
+    }
   };
+
   const onCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newCode = e.target.value;
     if (newCode.length > 6) return;
@@ -207,8 +211,8 @@ export default function JoinModal() {
                 value={phoneNumber}
                 onChange={onPhoneChange}
                 placeholder="휴대폰(숫자만 입력)"
-                errors={state?.fieldErrors.phone}
-                disabled={isVerified}
+                errors={isVerified ? undefined : state?.fieldErrors.phone}
+                readOnly={isVerified}
                 required
               />
               <button
@@ -228,7 +232,8 @@ export default function JoinModal() {
                 value={code}
                 onChange={onCodeChange}
                 placeholder="인증번호(6자리)"
-                disabled={!isPhoneSend || isVerified}
+                disabled={!isPhoneSend}
+                readOnly={isVerified}
               />
               <button
                 type="button"
@@ -298,6 +303,9 @@ export default function JoinModal() {
                 <Link href={"/"} target="_blank" className="text-xs">
                   [약관 보기]
                 </Link>
+              </div>
+              <div className="text-red-500 font-medium mt-2">
+                {state?.fieldErrors.term_check}
               </div>
             </div>
             <Button text="회원가입" addClassName="btn-outline" />
