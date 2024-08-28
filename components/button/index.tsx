@@ -1,4 +1,5 @@
 "use client";
+
 import { ButtonHTMLAttributes } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -20,7 +21,7 @@ export default function Button({
       className={`btn disabled:bg-neutral-400 disabled:text-neutral-300 disabled:cursor-not-allowed ${addClassName}`}
       {...rest}
     >
-      {pending ? "Loading..." : text}
+      {pending ? "로딩중..." : text}
     </button>
   );
 }

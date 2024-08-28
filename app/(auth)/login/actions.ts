@@ -5,30 +5,29 @@ import z from "zod";
 import bcrypt from "bcrypt";
 import { goLogin } from "@/lib/session";
 
-const checkEmailExists = async (email: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      email,
-    },
-    select: {
-      id: true,
-    },
-  });
-  return Boolean(user);
-};
+// const checkUser = async ({ email, password }: any) => {
+//   // 해당 메일 유저 있는지 검증
+//   const user = await db.user.findUnique({
+//     where: {
+//       email,
+//     },
+//     select: {
+//       id: true,
+//     },
+//   });
+//   return Boolean(user);
+// };
 
 const formSchema = z.object({
-  email: z
-    .string()
-    .email()
-    .toLowerCase()
-    .refine(checkEmailExists, "An account with this email does not exist."),
+  email: z.string().email().toLowerCase(),
   password: z.string({
-    required_error: "Password must be at least",
+    required_error: "비밀번호가 필요합니다.",
   }),
-  // .min(PASSWORD_MIN_LENGTH)
-  // .regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
 });
+// .refine(checkUser, {
+//   message: "이메일 또는 비밀번호가 올바르지 않습니다.",
+//   path: ["password"], // 에러 발생 지점 설정
+// });
 
 export const login = async (prevState: any, formData: FormData) => {
   const data = {
@@ -50,6 +49,17 @@ export const login = async (prevState: any, formData: FormData) => {
         password: true,
       },
     });
+
+    // 해당 이메일 유저 없으면 에러
+    if (!user) {
+      return {
+        fieldErrors: {
+          password: ["이메일 또는 비밀번호가 올바르지 않습니다."],
+          email: [],
+        },
+      };
+    }
+
     // if the user is found, check the password hash
     const ok = await bcrypt.compare(
       result.data.password,
@@ -57,11 +67,11 @@ export const login = async (prevState: any, formData: FormData) => {
     );
     // log the user in
     if (ok) {
-      await goLogin(user!.id, "/profile");
+      await goLogin(user!.id, "/");
     } else {
       return {
         fieldErrors: {
-          password: ["Wrong password."],
+          password: ["이메일 또는 비밀번호가 올바르지 않습니다."],
           email: [],
         },
       };

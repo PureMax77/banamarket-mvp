@@ -27,6 +27,9 @@ export default function JoinModal() {
   const [isLoadingReq, setIsLoadingReq] = useState<boolean>(false);
   const [isLoadingVery, setIsLoadingVery] = useState<boolean>(false);
 
+  // 에러메시지 초기화 용
+  const [isFirst, setIsFirst] = useState(true);
+
   const [isAdultCheck, setIsAdultCheck] = useState<boolean>(false); // 14세 이상 동의
   const [isTermCheck, setIsTermCheck] = useState<boolean>(false); // 이용약관 동의
   const [isInfoCheck, setIsInfoCheck] = useState<boolean>(false); // 개인정보 동의
@@ -135,6 +138,7 @@ export default function JoinModal() {
       setIsTermCheck(false);
       setIsInfoCheck(false);
       setIsAdCheck(false);
+      setIsFirst(true);
     };
 
     if (dialog) {
@@ -174,7 +178,10 @@ export default function JoinModal() {
           </form>
           <form
             ref={formRef}
-            action={dispatch}
+            action={(formData) => {
+              setIsFirst(false);
+              dispatch(formData);
+            }}
             className="flex flex-col gap-3 max-w-lg w-full"
           >
             <h3 className="font-bold text-lg mb-2">이메일 회원가입</h3>
@@ -183,7 +190,7 @@ export default function JoinModal() {
               type="email"
               placeholder="아이디(이메일)"
               required
-              errors={state?.fieldErrors.email}
+              errors={isFirst ? undefined : state?.fieldErrors.email}
             />
             <Input
               name="password"
@@ -191,7 +198,7 @@ export default function JoinModal() {
               placeholder="비밀번호(영문,숫자,특수문자 8~20자리)"
               minLength={PASSWORD_MIN_LENGTH}
               maxLength={PASSWORD_MAX_LENGTH}
-              errors={state?.fieldErrors.password}
+              errors={isFirst ? undefined : state?.fieldErrors.password}
               required
             />
             <Input
@@ -200,7 +207,7 @@ export default function JoinModal() {
               placeholder="비밀번호 확인"
               minLength={PASSWORD_MIN_LENGTH}
               maxLength={PASSWORD_MAX_LENGTH}
-              errors={state?.fieldErrors.confirm_password}
+              errors={isFirst ? undefined : state?.fieldErrors.confirm_password}
               required
             />
             <Input
@@ -209,7 +216,7 @@ export default function JoinModal() {
               placeholder="이름"
               minLength={NAME_MIN_LENGTH}
               maxLength={NAME_MAX_LENGTH}
-              errors={state?.fieldErrors.name}
+              errors={isFirst ? undefined : state?.fieldErrors.name}
               required
             />
             <div className="flex gap-3 w-full">
@@ -220,7 +227,13 @@ export default function JoinModal() {
                 value={phoneNumber}
                 onChange={onPhoneChange}
                 placeholder="휴대폰(숫자만 입력)"
-                errors={isVerified ? undefined : state?.fieldErrors.phone}
+                errors={
+                  isFirst
+                    ? undefined
+                    : isVerified
+                    ? undefined
+                    : state?.fieldErrors.phone
+                }
                 readOnly={isVerified}
                 required
               />
