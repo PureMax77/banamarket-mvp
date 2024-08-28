@@ -32,6 +32,7 @@ export default function JoinModal() {
   const [isInfoCheck, setIsInfoCheck] = useState<boolean>(false); // 개인정보 동의
   const [isAdCheck, setIsAdCheck] = useState<boolean>(false); // 광고수신 동의
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleAllCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsAllCheck(e.target.checked);
@@ -124,9 +125,16 @@ export default function JoinModal() {
   useEffect(() => {
     const dialog = dialogRef.current;
 
+    // 여기에 다이얼로그가 닫힐 때 실행할 로직을 추가할 수 있습니다.
     const handleDialogClose = () => {
-      console.log("Dialog was closed");
-      // 여기에 다이얼로그가 닫힐 때 실행할 로직을 추가할 수 있습니다.
+      if (formRef.current) formRef.current.reset();
+      setPhoneNumber("010");
+      setCode("");
+      setIsAllCheck(false);
+      setIsAdultCheck(false);
+      setIsTermCheck(false);
+      setIsInfoCheck(false);
+      setIsAdCheck(false);
     };
 
     if (dialog) {
@@ -165,6 +173,7 @@ export default function JoinModal() {
             </button>
           </form>
           <form
+            ref={formRef}
             action={dispatch}
             className="flex flex-col gap-3 max-w-lg w-full"
           >

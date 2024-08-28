@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import KakaoImg from "@/public/kakao48.png";
 import JoinArea from "@/components/auth/join-area";
+import LoginModal from "@/components/modal/login-modal";
 
 export default function Login() {
   const [state, dispatch] = useFormState(login, null);
@@ -29,28 +30,8 @@ export default function Login() {
           <Image src={KakaoImg} alt="kakao_icon" />
           <span className="ml-2 text-2xl font-black">카카오 간편 로그인</span>
         </Link>
-        <button className="text-neutral-500 mt-4 text-lg ">
-          이메일 로그인
-        </button>
+        <LoginModal />
       </div>
-      {/* <form action={dispatch} className="flex flex-col gap-3">
-        <Input
-          name="id"
-          type="text"
-          placeholder="아이디"
-          required
-          // errors={state?.fieldErrors.email}
-        />
-        <Input
-          name="password"
-          type="password"
-          placeholder="비밀번호"
-          required
-          minLength={PASSWORD_MIN_LENGTH}
-          // errors={state?.fieldErrors.password}
-        />
-        <Button text="로그인" />
-      </form> */}
       <JoinArea />
     </div>
   );
