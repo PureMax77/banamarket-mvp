@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
 
   const token = user?.smsToken_forEmail;
 
-  // 해당번호 토크 없음
-  if (!token) {
+  // 해당번호 토크 없거나 이미 인증된 토큰
+  if (!token || token.isVerified) {
     return new Response(
       JSON.stringify({ msg: "먼저 인증번호를 요청하세요." }),
       {
@@ -72,8 +72,11 @@ export async function POST(request: NextRequest) {
   }
 
   // 이상없이 모두 통과
-  await db.sMSTokenForEmail.delete({
+  await db.sMSTokenForEmail.update({
     where: { id: token.id },
+    data: {
+      isVerified: true,
+    },
   });
 
   // 이메일 마스킹

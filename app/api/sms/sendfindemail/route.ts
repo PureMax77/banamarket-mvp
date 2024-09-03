@@ -72,8 +72,22 @@ export async function POST(request: NextRequest) {
   const token = user.smsToken_forEmail;
 
   if (token) {
-    // 24시간 요청 5번이내 제한
     const now = new Date(); // 현재 시간
+
+    // 인증 완료(verified)된지 10분 이내에는 재인증 불가
+    const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000); // 현재 시간에서 10분 전
+    if (token.isVerified && token.updated_at > tenMinutesAgo) {
+      return new Response(
+        JSON.stringify({
+          msg: "이미 아이디 확인하셨습니다. 10분 후에 다시 시도해 주세요.",
+        }),
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // 24시간 요청 5번이내 제한
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 현재 시간에서 24시간 전
 
     if (token.count > 4) {
@@ -97,6 +111,7 @@ export async function POST(request: NextRequest) {
           },
           data: {
             count: 1,
+            isVerified: false,
             token: newToken,
           },
         });
@@ -111,6 +126,7 @@ export async function POST(request: NextRequest) {
         },
         data: {
           count: token.count + 1,
+          isVerified: false,
           token: newToken,
         },
       });
@@ -121,6 +137,7 @@ export async function POST(request: NextRequest) {
     const newToken = await sendSMS();
     await db.sMSTokenForEmail.create({
       data: {
+        isVerified: false,
         count: 1,
         token: newToken,
         userId: user.id,
