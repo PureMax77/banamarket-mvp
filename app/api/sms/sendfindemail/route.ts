@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     if (token.isVerified && token.updated_at > tenMinutesAgo) {
       return new Response(
         JSON.stringify({
-          msg: "이미 아이디 확인하셨습니다. 10분 후에 다시 시도해 주세요.",
+          msg: "해당 번호로 이미 확인하셨습니다. 10분 후에 다시 시도해 주세요.",
         }),
         {
           status: 400,
