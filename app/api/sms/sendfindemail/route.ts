@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import crypto from "crypto";
 import twilio from "twilio";
 
-// 회원가입 용 인증코드 발송
+// 아이디(이메일) 찾기용 인증코드 발송
 export async function POST(request: NextRequest) {
   const { phoneNumber } = await request.json();
 
@@ -22,11 +22,32 @@ export async function POST(request: NextRequest) {
     where: {
       phone: phoneNumber,
     },
+    select: {
+      id: true,
+      kakao_id: true,
+      smsToken_forEmail: true,
+    },
   });
-  if (user) {
-    return new Response(JSON.stringify({ msg: "이미 가입된 번호입니다." }), {
-      status: 400,
-    });
+
+  if (!user) {
+    return new Response(
+      JSON.stringify({ msg: "해당 번호로 가입한 회원이 없습니다." }),
+      {
+        status: 400,
+      }
+    );
+  }
+
+  // 카카오 가입 유저
+  if (user.kakao_id) {
+    return new Response(
+      JSON.stringify({
+        msg: "카카오로 가입한 계정입니다. 카카오 간편로그인을 이용해주세요.",
+      }),
+      {
+        status: 400,
+      }
+    );
   }
 
   // 문자 보내기 함수
@@ -47,12 +68,8 @@ export async function POST(request: NextRequest) {
     return token;
   };
 
-  // 기존 토큰 조회
-  const token = await db.sMSToken.findUnique({
-    where: {
-      phone: phoneNumber,
-    },
-  });
+  // 기존 토큰
+  const token = user.smsToken_forEmail;
 
   if (token) {
     // 24시간 요청 5번이내 제한
@@ -74,13 +91,12 @@ export async function POST(request: NextRequest) {
       } else {
         // 24시간 지남
         const newToken = await sendSMS();
-        await db.sMSToken.update({
+        await db.sMSTokenForEmail.update({
           where: {
-            phone: phoneNumber,
+            userId: user.id,
           },
           data: {
             count: 1,
-            isVerified: false,
             token: newToken,
           },
         });
@@ -89,13 +105,12 @@ export async function POST(request: NextRequest) {
     } else {
       // 요청 5번 미만임
       const newToken = await sendSMS();
-      await db.sMSToken.update({
+      await db.sMSTokenForEmail.update({
         where: {
-          phone: phoneNumber,
+          userId: user.id,
         },
         data: {
           count: token.count + 1,
-          isVerified: false,
           token: newToken,
         },
       });
@@ -104,11 +119,11 @@ export async function POST(request: NextRequest) {
   } else {
     // 기존 토큰없고 첫요청
     const newToken = await sendSMS();
-    await db.sMSToken.create({
+    await db.sMSTokenForEmail.create({
       data: {
-        phone: phoneNumber,
         count: 1,
         token: newToken,
+        userId: user.id,
       },
     });
     return new Response("Success", { status: 200 });

@@ -1,7 +1,8 @@
 import db from "@/lib/db";
+import { emailMasking } from "@/lib/utils";
 import { NextRequest } from "next/server";
 
-// 회원가입용 인증코드 확인
+// 아이디(이메일) 찾기용 인즈코드 확인
 export async function POST(request: NextRequest) {
   const { phone, code } = await request.json();
 
@@ -12,11 +13,28 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const token = await db.sMSToken.findUnique({
+  const user = await db.user.findUnique({
     where: {
       phone,
     },
+    select: {
+      id: true,
+      email: true,
+      smsToken_forEmail: true,
+    },
   });
+
+  // 해당 휴대폰번호 유저 없음
+  if (!user) {
+    return new Response(
+      JSON.stringify({ msg: "해당 번호로 가입한 회원이 없습니다." }),
+      {
+        status: 400,
+      }
+    );
+  }
+
+  const token = user?.smsToken_forEmail;
 
   // 해당번호 토크 없음
   if (!token) {
@@ -53,19 +71,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 이미 인증된 토큰
-  if (token.isVerified) {
-    return new Response(JSON.stringify({ msg: "이미 인증이 완료됐습니다." }), {
-      status: 400,
-    });
-  }
-
   // 이상없이 모두 통과
-  await db.sMSToken.update({
+  await db.sMSTokenForEmail.delete({
     where: { id: token.id },
-    data: {
-      isVerified: true,
-    },
   });
-  return new Response("success", { status: 200 });
+
+  // 이메일 마스킹
+  const maskedEmail = emailMasking(user.email!);
+
+  return new Response(
+    JSON.stringify({
+      email: maskedEmail,
+    }),
+    { status: 200 }
+  );
 }

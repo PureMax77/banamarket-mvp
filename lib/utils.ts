@@ -37,3 +37,8 @@ export function generateNickname() {
   const fruitOrVegetable = getRandomFruitOrVegetable();
   return `${adjective}${fruitOrVegetable}${genRandomFourNumber().toString()}`;
 }
+
+// 이메일의 @이전 아이디 앞3글자 빼고 *로 변경
+export function emailMasking(email: string) {
+  return email.replaceAll(/(?<=.{3}).(?=[^@]*?@)/g, "*");
+}

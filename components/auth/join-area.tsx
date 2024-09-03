@@ -1,22 +1,17 @@
 import Link from "next/link";
-import KakaoImg from "@/public/kakao48.png";
-import Image from "next/image";
-import {
-  MagnifyingGlassIcon,
-  ShoppingCartIcon,
-} from "@heroicons/react/24/outline";
+
+import { MagnifyingGlassIcon, KeyIcon } from "@heroicons/react/24/outline";
 import { PATH_NAME } from "@/lib/constants";
+import FindEmailModal from "../modal/findEmail-modal";
 
 export default function JoinArea() {
   return (
     <div className="flex flex-col gap-8">
       <div className="w-full h-px bg-neutral-500"></div>
       <div className="flex gap-12 justify-center text-neutral-500 *:hover:cursor-pointer">
+        <FindEmailModal />
         <div className="flex gap-1 items-center">
-          <MagnifyingGlassIcon className="w-5 h-5" /> 아이디/비밀번호 찾기
-        </div>
-        <div className="flex gap-1 items-center">
-          <ShoppingCartIcon className="w-5 h-5" /> 비회원 주문/배송 조회
+          <KeyIcon className="w-5 h-5" /> 비밀번호 찾기
         </div>
       </div>
       <div className="flex flex-col gap-3">

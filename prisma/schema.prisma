@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String   @unique
-  name         String?
-  email        String?  @unique
-  password     String?
-  phone        String?  @unique
-  kakao_id     String?  @unique
-  avatar       String?
-  avatar_thumb String?
-  ad_agree     Boolean
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  id                Int               @id @default(autoincrement())
+  username          String            @unique
+  name              String?
+  email             String?           @unique
+  password          String?
+  phone             String?           @unique
+  kakao_id          String?           @unique
+  avatar            String?
+  avatar_thumb      String?
+  ad_agree          Boolean
+  smsToken_forEmail SMSTokenForEmail?
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @updatedAt
 }
 
 model SMSToken {
@@ -30,4 +31,14 @@ model SMSToken {
   token      String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+model SMSTokenForEmail {
+  id         Int      @id @default(autoincrement())
+  count      Int      @default(0)
+  token      String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int      @unique
 }

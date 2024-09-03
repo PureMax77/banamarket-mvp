@@ -53,8 +53,10 @@ export default function JoinModal() {
 
   const onCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newCode = e.target.value;
-    if (newCode.length > 6) return;
-    else setCode(newCode);
+    if (OnlyNumberRegex.test(newCode) || newCode === "") {
+      if (newCode.length > 6) return;
+      else setCode(newCode);
+    }
   };
 
   // 휴대폰인증번호 전송
@@ -223,7 +225,7 @@ export default function JoinModal() {
               <Input
                 id="noarrow-number-input"
                 name="phone"
-                type="number"
+                type="text"
                 value={phoneNumber}
                 onChange={onPhoneChange}
                 placeholder="휴대폰(숫자만 입력)"
@@ -250,7 +252,7 @@ export default function JoinModal() {
               <Input
                 id="noarrow-number-input"
                 name="verifyCode"
-                type="number"
+                type="text"
                 value={code}
                 onChange={onCodeChange}
                 placeholder="인증번호(6자리)"
