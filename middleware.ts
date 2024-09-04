@@ -10,6 +10,7 @@ interface Routes {
 // array가 아닌 object에서 key가 있는지 없는지 찾는게 더 빠름
 // 로그인 안 됐을 때 들어가지면 안 되는 페이지
 const privateOnlyUrls: Routes = {
+  "/chats": true,
   "/profile": true,
 };
 // 로그인 됐을 때 들어가지면 안 되는 페이지
@@ -30,7 +31,7 @@ export async function middleware(request: NextRequest) {
     // 로그인 안됨
     if (exists_Private) {
       // public 페이지 아닌곳으로 접근
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL("/login", request.url));
     }
   } else {
     // 로그인 됨
