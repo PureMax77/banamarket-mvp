@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { MagnifyingGlassIcon, KeyIcon } from "@heroicons/react/24/outline";
 import { PATH_NAME } from "@/lib/constants";
 import FindEmailModal from "../modal/findEmail-modal";
+import FindPwModal from "../modal/findpw-modal";
 
 export default function JoinArea() {
   return (
@@ -10,9 +10,7 @@ export default function JoinArea() {
       <div className="w-full h-px bg-neutral-500"></div>
       <div className="flex gap-12 justify-center text-neutral-500 *:hover:cursor-pointer">
         <FindEmailModal />
-        <div className="flex gap-1 items-center">
-          <KeyIcon className="w-5 h-5" /> 비밀번호 찾기
-        </div>
+        <FindPwModal />
       </div>
       <div className="flex flex-col gap-3">
         <Link

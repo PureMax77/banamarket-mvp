@@ -2,10 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import Input from "../input";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { KeyIcon } from "@heroicons/react/24/outline";
 import { OnlyNumberRegex, PhoneNumberRegex } from "@/lib/constants";
+import { z } from "zod";
 
-export default function FindEmailModal() {
+// 이메일 스키마 정의
+const emailSchema = z.string().email();
+
+export default function FindPwModal() {
+  const [email, setEmail] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("010");
   const [code, setCode] = useState<string>("");
   const [isPhoneSend, setIsPhoneSend] = useState<boolean>(false);
@@ -14,6 +19,10 @@ export default function FindEmailModal() {
   const [isLoadingVery, setIsLoadingVery] = useState<boolean>(false);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
 
   const onPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (OnlyNumberRegex.test(e.target.value) || e.target.value === "") {
@@ -31,6 +40,10 @@ export default function FindEmailModal() {
 
   // 휴대폰인증번호 전송
   const onPhoneSend = async () => {
+    // 이메일 형식체크
+    const result = emailSchema.safeParse(email);
+    if (!result.success) return alert("아이디가 이메일 형식이 아닙니다.");
+
     if (!PhoneNumberRegex.test(phoneNumber)) {
       return alert("잘못된 휴대폰번호입니다.");
     }
@@ -38,13 +51,14 @@ export default function FindEmailModal() {
     try {
       setIsLoadingReq(true);
 
-      const result = await fetch("/api/sms/sendfindemail", {
+      const result = await fetch("/api/sms/sendfindpw", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          phoneNumber: phoneNumber,
+          email,
+          phoneNumber,
         }),
       });
 
@@ -71,22 +85,22 @@ export default function FindEmailModal() {
     try {
       setIsLoadingVery(true);
 
-      const result = await fetch("/api/sms/checkfindemail", {
+      const result = await fetch("/api/sms/checkfindpw", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          email,
           phone: phoneNumber,
           code,
         }),
       });
 
       if (result.status === 200) {
-        const { email } = await result.json();
         setIsVerified(true);
         dialogRef.current?.close();
-        alert(`회원님의 아이디는 ${email} 입니다.`);
+        alert(`새로운 비밀번호가 문자로 전송됐습니다.`);
       } else {
         const { msg } = await result.json();
         alert(msg);
@@ -106,6 +120,7 @@ export default function FindEmailModal() {
     const handleDialogClose = () => {
       setPhoneNumber("010");
       setCode("");
+      setEmail("");
       setIsPhoneSend(false);
       setIsVerified(false);
     };
@@ -128,8 +143,7 @@ export default function FindEmailModal() {
         className="flex gap-1 items-center outline-none"
         onClick={() => dialogRef.current?.showModal()}
       >
-        <MagnifyingGlassIcon className="w-5 h-5" />
-        아이디 찾기
+        <KeyIcon className="w-5 h-5" /> 비밀번호 찾기
       </button>
       <dialog ref={dialogRef} id="join_modal" className="modal">
         <div className="modal-box w-full max-w-96 flex justify-center items-center flex-col">
@@ -139,7 +153,15 @@ export default function FindEmailModal() {
             </button>
           </form>
           <div className="flex flex-col gap-3 max-w-lg w-full">
-            <h3 className="font-bold text-lg mb-2">아이디(이메일) 찾기</h3>
+            <h3 className="font-bold text-lg mb-2">비밀번호 찾기</h3>
+            <Input
+              name="email"
+              type="email"
+              value={email}
+              onChange={onEmailChange}
+              placeholder="아이디(이메일)"
+              required
+            />
             <div className="flex gap-3 w-full">
               <Input
                 name="phone"

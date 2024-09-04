@@ -19,6 +19,7 @@ model User {
   avatar_thumb      String?
   ad_agree          Boolean
   smsToken_forEmail SMSTokenForEmail?
+  smsToken_forPw    SMSTokenForPw?
   created_at        DateTime          @default(now())
   updated_at        DateTime          @updatedAt
 }
@@ -34,6 +35,17 @@ model SMSToken {
 }
 
 model SMSTokenForEmail {
+  id         Int      @id @default(autoincrement())
+  isVerified Boolean  @default(false)
+  count      Int      @default(0)
+  token      String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int      @unique
+}
+
+model SMSTokenForPw {
   id         Int      @id @default(autoincrement())
   isVerified Boolean  @default(false)
   count      Int      @default(0)

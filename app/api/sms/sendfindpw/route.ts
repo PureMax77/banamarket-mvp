@@ -3,10 +3,25 @@ import db from "@/lib/db";
 import { NextRequest } from "next/server";
 import crypto from "crypto";
 import twilio from "twilio";
+import { z } from "zod";
 
-// 아이디(이메일) 찾기용 인증코드 발송
+// 이메일 스키마 정의
+const emailSchema = z.string().email();
+
+// 비밀번호 찾기용 인증코드 발송
 export async function POST(request: NextRequest) {
-  const { phoneNumber } = await request.json();
+  const { email, phoneNumber } = await request.json();
+
+  // 이메일 규격 확인
+  const result = emailSchema.safeParse(email);
+  if (!result.success) {
+    return new Response(
+      JSON.stringify({ msg: "아이디가 이메일 형식이 아닙니다." }),
+      {
+        status: 400,
+      }
+    );
+  }
 
   // 휴대폰번호 규격 맞는지
   const isCorrectNumber = PhoneNumberRegex.test(phoneNumber);
@@ -17,21 +32,22 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // 해당번호 유저 조회
+  // 이메일 및 번호 유저 조회
   const user = await db.user.findUnique({
     where: {
+      email,
       phone: phoneNumber,
     },
     select: {
       id: true,
       kakao_id: true,
-      smsToken_forEmail: true,
+      smsToken_forPw: true,
     },
   });
 
   if (!user) {
     return new Response(
-      JSON.stringify({ msg: "해당 번호로 가입한 회원이 없습니다." }),
+      JSON.stringify({ msg: "해당 정보와 일치하는 회원이 없습니다." }),
       {
         status: 400,
       }
@@ -69,7 +85,7 @@ export async function POST(request: NextRequest) {
   };
 
   // 기존 토큰
-  const token = user.smsToken_forEmail;
+  const token = user.smsToken_forPw;
 
   if (token) {
     const now = new Date(); // 현재 시간
@@ -105,7 +121,7 @@ export async function POST(request: NextRequest) {
       } else {
         // 24시간 지남
         const newToken = await sendSMS();
-        await db.sMSTokenForEmail.update({
+        await db.sMSTokenForPw.update({
           where: {
             userId: user.id,
           },
@@ -120,7 +136,7 @@ export async function POST(request: NextRequest) {
     } else {
       // 요청 5번 미만임
       const newToken = await sendSMS();
-      await db.sMSTokenForEmail.update({
+      await db.sMSTokenForPw.update({
         where: {
           userId: user.id,
         },
@@ -135,7 +151,7 @@ export async function POST(request: NextRequest) {
   } else {
     // 기존 토큰없고 첫요청
     const newToken = await sendSMS();
-    await db.sMSTokenForEmail.create({
+    await db.sMSTokenForPw.create({
       data: {
         isVerified: false,
         count: 1,

@@ -1,16 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-  #noarrow-number-input::-webkit-inner-spin-button,
-  #noarrow-number-input::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  #noarrow-number-input {
-    -moz-appearance: textfield;
-    -ms-appearance: textfield;
-  }
-}

@@ -223,7 +223,6 @@ export default function JoinModal() {
             />
             <div className="flex gap-3 w-full">
               <Input
-                id="noarrow-number-input"
                 name="phone"
                 type="text"
                 value={phoneNumber}
@@ -250,7 +249,6 @@ export default function JoinModal() {
             </div>
             <div className="flex gap-3 w-full">
               <Input
-                id="noarrow-number-input"
                 name="verifyCode"
                 type="text"
                 value={code}

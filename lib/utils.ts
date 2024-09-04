@@ -42,3 +42,33 @@ export function generateNickname() {
 export function emailMasking(email: string) {
   return email.replaceAll(/(?<=.{3}).(?=[^@]*?@)/g, "*");
 }
+
+// 영문, 숫자, 특수문자(~!@#$%) 각 1개씩 무조건 포함하는 10자리의 랜덤 비번을 생성
+export function generateRandomPw() {
+  const lowerChars = "abcdefghijklmnopqrstuvwxyz";
+  const upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  const specialChars = "~!@#$%";
+
+  // 각각 하나씩 포함
+  const randomLower = lowerChars[Math.floor(Math.random() * lowerChars.length)];
+  const randomUpper = upperChars[Math.floor(Math.random() * upperChars.length)];
+  const randomNumber = numbers[Math.floor(Math.random() * numbers.length)];
+  const randomSpecial =
+    specialChars[Math.floor(Math.random() * specialChars.length)];
+
+  // 나머지 6자리를 랜덤으로 채운다.
+  const allChars = lowerChars + upperChars + numbers + specialChars;
+  let remainingChars = "";
+  for (let i = 0; i < 6; i++) {
+    remainingChars += allChars[Math.floor(Math.random() * allChars.length)];
+  }
+
+  // 비밀번호를 섞는다.
+  const password =
+    randomLower + randomUpper + randomNumber + randomSpecial + remainingChars;
+  return password
+    .split("")
+    .sort(() => Math.random() - 0.5)
+    .join("");
+}
