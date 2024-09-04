@@ -5,14 +5,11 @@ import {
   NAME_MIN_LENGTH,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
-  PASSWORD_REGEX,
-  PASSWORD_REGEX_ERROR,
   PhoneNumberRegex,
 } from "@/lib/constants";
 import db from "@/lib/db";
 import { z } from "zod";
-import { redirect } from "next/navigation";
-import getSession, { goLogin } from "@/lib/session";
+import { goLogin } from "@/lib/session";
 import { generateNickname } from "@/lib/utils";
 
 // 한글만 포함된 문자열인지 검증하는 정규식

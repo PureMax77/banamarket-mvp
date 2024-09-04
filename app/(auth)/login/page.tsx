@@ -1,18 +1,15 @@
-"use client";
-
-import Input from "@/components/input";
-import Button from "@/components/button";
-import { PASSWORD_MIN_LENGTH, PATH_NAME } from "@/lib/constants";
-import { useFormState } from "react-dom";
-import { login } from "./actions";
+import { PATH_NAME } from "@/lib/constants";
 import Link from "next/link";
 import Image from "next/image";
 import KakaoImg from "@/public/kakao48.png";
 import JoinArea from "@/components/auth/join-area";
 import LoginModal from "@/components/modal/login-modal";
 
+export const metadata = {
+  title: "로그인",
+};
+
 export default function Login() {
-  const [state, dispatch] = useFormState(login, null);
   return (
     <div className="min-h-screen flex flex-col justify-center gap-10 py-8 px-6">
       <div className="flex flex-col items-center gap-6">

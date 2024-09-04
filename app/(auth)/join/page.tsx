@@ -5,6 +5,10 @@ import LoginArea from "@/components/auth/login-area";
 import { PATH_NAME } from "@/lib/constants";
 import JoinModal from "@/components/modal/join-modal";
 
+export const metadata = {
+  title: "회원가입",
+};
+
 export default function Join() {
   return (
     <div className="min-h-screen flex flex-col justify-center gap-10 py-8 px-6">
