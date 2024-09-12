@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Product" ADD COLUMN     "farmId" INTEGER NOT NULL DEFAULT 1;
+
+-- AddForeignKey
+ALTER TABLE "Product" ADD CONSTRAINT "Product_farmId_fkey" FOREIGN KEY ("farmId") REFERENCES "Farm"("id") ON DELETE CASCADE ON UPDATE CASCADE;

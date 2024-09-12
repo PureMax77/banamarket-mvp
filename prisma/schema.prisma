@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -18,10 +18,23 @@ model User {
   avatar            String?
   avatar_thumb      String?
   ad_agree          Boolean
+  isSeller          Boolean           @default(false)
   smsToken_forEmail SMSTokenForEmail?
   smsToken_forPw    SMSTokenForPw?
+  farms             Farm[]
   created_at        DateTime          @default(now())
   updated_at        DateTime          @updatedAt
+}
+
+model Farm {
+  id             Int       @id @default(autoincrement())
+  name           String
+  businessNumber String
+  products       Product[]
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int
 }
 
 model SMSToken {
@@ -54,4 +67,20 @@ model SMSTokenForPw {
   updated_at DateTime @updatedAt
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int      @unique
+}
+
+model Product {
+  id                Int       @id @default(autoincrement())
+  title             String
+  price             Float
+  photo             String[]
+  discount          Int?
+  description       String
+  final_description String?
+  startDate         DateTime
+  endDate           DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  farm              Farm      @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  farmId            Int       @default(1)
 }
