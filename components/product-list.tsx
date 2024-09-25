@@ -46,7 +46,7 @@ export default function ProductList({ initialProducts }: ProductListProps) {
         // default: 0 보이는 즉시
         threshold: 0.1,
         // tab bar 때문에 못보는데 마진으로 지점을 offset 가능
-        rootMargin: "0px 0px -100px 0px",
+        // rootMargin: "0px 0px -100px 0px",
       }
     );
     if (trigger.current) {
@@ -62,17 +62,15 @@ export default function ProductList({ initialProducts }: ProductListProps) {
       {products.map((product) => (
         <ListProduct key={product.id} {...product} />
       ))}
-      {/* {!isLastPage && (
+      {!isLastPage && (
         <span
           ref={trigger}
-          style={{
-            marginTop: `${(page + 1) * 200}vh`,
-          }}
-          className="mb-96 text-sm font-semibold bg-orange-500 w-fit mx-auto px-3 py-2 rounded-md hover:opacity-90 active:scale-95 transition-transform"
+          className="mt-14 text-sm font-semibold bg-orange-500 w-fit mx-auto px-3 py-2 rounded-md hover:opacity-90 active:scale-95 transition-transform"
         >
           {isLoading ? "Loading..." : "Load More"}
         </span>
-      )} */}
+      )}
+      {isLastPage && <div className="w-full py-10 h-16"></div>}
     </div>
   );
 }

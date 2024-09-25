@@ -19,7 +19,7 @@ export default function TabBar() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 w-full mx-auto max-w-screen-sm grid grid-cols-4 border-neutral-200 border-t px-5 py-3">
+    <div className="fixed bottom-0 bg-white w-full mx-auto max-w-screen-sm grid grid-cols-4 border-neutral-200 border-t px-5 py-3">
       <Link href="/" className="flex flex-col items-center gap-px">
         {pathname === "/" ? (
           <SolidHome className="w-7 h-7" />

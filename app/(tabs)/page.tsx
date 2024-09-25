@@ -1,4 +1,5 @@
 import ProductList from "@/components/product-list";
+import { FEED_CONTENT_COUNT } from "@/lib/constants";
 import db from "@/lib/db";
 import getSession from "@/lib/session";
 import { Prisma } from "@prisma/client";
@@ -16,7 +17,7 @@ async function getInitialProducts() {
       photo: true,
       id: true,
     },
-    take: 3,
+    take: FEED_CONTENT_COUNT,
     orderBy: {
       created_at: "desc",
     },
