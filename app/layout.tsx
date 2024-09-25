@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${noto.variable} ${notoKR.variable} bg-neutral-200`}>
-        <div className="mx-auto max-w-screen-sm bg-white">{children}</div>
+        <div className="m-screen-set bg-white">{children}</div>
       </body>
     </html>
   );

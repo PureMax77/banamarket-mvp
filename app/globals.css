@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 모바일 반응형 셋 */
+@layer components {
+  .m-screen-set {
+    @apply mx-auto max-w-screen-sm;
+  }
+}
