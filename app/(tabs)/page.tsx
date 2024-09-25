@@ -40,7 +40,7 @@ export default async function Home() {
   };
 
   return (
-    <div>
+    <div className="px-4">
       {/* <form action={logOut}>
         <button className="btn">logout</button>
       </form> */}

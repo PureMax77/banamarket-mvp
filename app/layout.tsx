@@ -32,10 +32,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${noto.variable} ${notoKR.variable} mx-auto max-w-screen-sm`}
-      >
-        {children}
+      <body className={`${noto.variable} ${notoKR.variable} bg-neutral-200`}>
+        <div className="mx-auto max-w-screen-sm bg-white">{children}</div>
       </body>
     </html>
   );
