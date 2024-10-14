@@ -18,7 +18,10 @@ export const PATH_NAME = {
   JOIN: "/join",
   KAKAO_START: "/kakao/start",
   KAKAO_COMPLETE: "/kakao/complete",
+  PRICE: "/price",
+  CHATS: "/chats",
   PROFILE: "/profile",
+  BIZ: "/biz",
 };
 
 export const PhoneNumberRegex = /^(01[016789]{1})-?[0-9]{3,4}-?[0-9]{4}$/;
