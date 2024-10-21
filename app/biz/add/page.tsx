@@ -10,11 +10,13 @@ import Input from "@/components/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getNextDayStartTime } from "@/lib/utils";
+import Image from "next/image";
+import PreviewCarousel from "@/components/carousel/preview-carousel";
 
 export default function BizAdd() {
-  const [preview, setPreview] = useState("");
-  const [uploadUrl, setUploadUrl] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string[]>([]);
+  const [uploadUrl, setUploadUrl] = useState<string[]>([]);
+  const [file, setFile] = useState<File[] | null>(null);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date(getNextDayStartTime(7)));
   const [isEndless, setIsEndless] = useState(false);
@@ -40,7 +42,8 @@ export default function BizAdd() {
     if (!files) {
       return;
     }
-    const file = files[0];
+
+    const fileList = Array.from(files);
 
     // Check if the file is an image
     const validImageTypes = [
@@ -49,35 +52,41 @@ export default function BizAdd() {
       "image/gif",
       "image/bmp",
     ];
-    if (!validImageTypes.includes(file.type)) {
-      alert("이미지 파일이 아닙니다.");
-      return;
+
+    for (const file of fileList) {
+      if (!validImageTypes.includes(file.type)) {
+        alert("이미지 파일이 아닙니다.");
+        return;
+      }
+
+      // Check if the file size is less than 3MB
+      const maxSizeInMB = 3;
+      if (file.size > maxSizeInMB * 1024 * 1024) {
+        alert("3MB 이하의 이미지를 사용해주세요.");
+        return;
+      }
     }
 
-    // Check if the file size is less than 3MB
-    const maxSizeInMB = 3;
-    if (file.size > maxSizeInMB * 1024 * 1024) {
-      alert("3MB 이하의 이미지를 사용해주세요.");
-      return;
-    }
+    const urlList = await getUploadUrl(fileList.length);
+    if (urlList.length > 0) {
+      const ids: string[] = [];
+      const urls: string[] = [];
+      urlList.forEach((data) => {
+        ids.push(`https://imagedelivery.net/S5EmZfh9mNC3-3xmENYiiA/${data.id}`);
+        urls.push(data.uploadURL);
+      });
 
-    const { success, result } = await getUploadUrl();
-    if (success) {
-      const { id, uploadURL } = result;
-      setUploadUrl(uploadURL);
-      setValue(
-        "photo",
-        `https://imagedelivery.net/S5EmZfh9mNC3-3xmENYiiA/${id}`
-      );
+      setUploadUrl(urls);
+      setValue("photo", ids);
     } else {
       alert("이미지 업로드에 실패했습니다");
       return;
     }
 
     // 브라우저에 올라간 이미지 메모리 주소URL
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-    setFile(file);
+    const previewUrls = fileList.map((file) => URL.createObjectURL(file));
+    setPreview(previewUrls);
+    setFile(fileList);
   };
 
   const onValid = async () => {
@@ -87,14 +96,11 @@ export default function BizAdd() {
   return (
     <div className="bg-yellow-100 bg-opacity-50 px-4 py-6">
       <form action={onValid} className="flex flex-col gap-5 mb-20">
-        <label
-          htmlFor="photo"
-          className="border-2 aspect-square flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-md border-dashed cursor-pointer bg-center bg-cover"
-          style={{
-            backgroundImage: `url(${preview})`,
-          }}
-        >
-          {!preview && (
+        {preview.length === 0 ? (
+          <label
+            htmlFor="photo"
+            className="border-2 aspect-square flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-md border-dashed cursor-pointer bg-center bg-cover"
+          >
             <>
               <PhotoIcon className="w-20" />
               <div className="text-neutral-400 text-sm">
@@ -102,8 +108,10 @@ export default function BizAdd() {
                 {errors.photo?.message}
               </div>
             </>
-          )}
-        </label>
+          </label>
+        ) : (
+          <PreviewCarousel preview={preview} />
+        )}
         {/* label을 눌러도 input이 눌러지니까 숨김 */}
         <input
           onChange={onImageChange}
@@ -112,6 +120,7 @@ export default function BizAdd() {
           name="photo"
           accept="image/*"
           className="hidden"
+          multiple
         />
         <Input
           required
@@ -121,7 +130,7 @@ export default function BizAdd() {
           errors={[errors.title?.message ?? ""]}
         />
         <div className="flex flex-col gap-2 justify-center border border-neutral-300 bg-white p-4 rounded-lg">
-          <div>판매 기간 설정</div>
+          <div className="mb-2">판매 기간 설정</div>
           <div className="flex items-center gap-4">
             <div>시작</div>
             <DatePicker
@@ -155,7 +164,7 @@ export default function BizAdd() {
           </div>
         </div>
         <textarea
-          className="textarea border border-neutral-300"
+          className="textarea border border-neutral-300 text-base placeholder:text-base"
           placeholder="상품설명"
           rows={6}
         ></textarea>
@@ -179,7 +188,7 @@ export default function BizAdd() {
           </svg>
         </button>
         <textarea
-          className="textarea border border-neutral-300"
+          className="textarea border border-neutral-300 text-base placeholder:text-base"
           placeholder="주문완료문구"
           rows={6}
         ></textarea>

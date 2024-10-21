@@ -1,9 +1,7 @@
 import { z } from "zod";
 
 export const productSchema = z.object({
-  photo: z.string({
-    required_error: "Photo is required",
-  }),
+  photo: z.array(z.string(), { required_error: "Photo is required" }),
   title: z.string({
     required_error: "Title is required",
   }),
@@ -16,3 +14,20 @@ export const productSchema = z.object({
 });
 
 export type ProductType = z.infer<typeof productSchema>;
+
+export interface IUploadResult {
+  id: string;
+  uploadURL: string;
+}
+export interface IUploadRes {
+  success: boolean;
+  result: IUploadResult;
+  errors: {
+    code: number;
+    message: string;
+  }[];
+  messages: {
+    code: number;
+    message: string;
+  }[];
+}
