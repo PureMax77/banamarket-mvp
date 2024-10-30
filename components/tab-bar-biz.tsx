@@ -18,16 +18,16 @@ export default function TabBar() {
 
   return (
     <div className="fixed bottom-0 bg-white w-full m-screen-set grid grid-cols-3 border-neutral-200 border-t px-5 py-3">
-      <Link href="/biz/add" className="flex flex-col items-center gap-px">
-        {pathname === "/biz/add" ? (
+      <Link href="/biz" className="flex flex-col items-center gap-px">
+        {pathname === "/biz/add" || pathname === "/biz" ? (
           <SolidPencil className="w-7 h-7" />
         ) : (
           <OutlinePencil className="w-7 h-7" />
         )}
         <span>상품등록</span>
       </Link>
-      <Link href="/price" className="flex flex-col items-center gap-px">
-        {pathname === "/price" ? (
+      <Link href="/biz/list" className="flex flex-col items-center gap-px">
+        {pathname === "/biz/list" ? (
           <SolidList className="w-7 h-7" />
         ) : (
           <OutlineList className="w-7 h-7" />

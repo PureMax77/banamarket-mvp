@@ -92,3 +92,14 @@ export function getNextDayStartTime(days: number): number {
 
   return tomorrow.getTime(); // 밀리초 타임스탬프 반환
 }
+
+// string으로 입력받은 값을 숫자형태의 string으로 변환
+export function formatStrToNumber(value: string): string {
+  // 숫자가 아닌 문자를 제거
+  let sanitizedValue = value.replace(/[^0-9]/g, "");
+
+  // 앞의 불필요한 0을 제거하여 순수 숫자 형태로 만듦
+  sanitizedValue = sanitizedValue.replace(/^0+(?!$)/, "");
+
+  return sanitizedValue;
+}
