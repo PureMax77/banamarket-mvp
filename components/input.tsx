@@ -1,4 +1,6 @@
 import { ForwardedRef, forwardRef, InputHTMLAttributes } from "react";
+import { Input } from "./ui/input";
+import { cn } from "@/lib/utils";
 
 interface InputProps {
   name: string;
@@ -8,6 +10,7 @@ interface InputProps {
 const _Input = (
   {
     name, // name도 rest에 속하지만 필수인걸 알려주기 위해 씀
+    className,
     errors = [],
     ...rest
   }: InputProps & InputHTMLAttributes<HTMLInputElement>,
@@ -15,10 +18,10 @@ const _Input = (
 ) => {
   return (
     <div className="flex flex-col gap-2 w-full">
-      <input
+      <Input
         ref={ref}
         name={name}
-        className="input input-bordered w-full"
+        className={cn("w-full bg-white", className)}
         {...rest}
       />
       {errors.map((error, index) => (

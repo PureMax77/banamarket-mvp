@@ -2,26 +2,30 @@
 
 import { ButtonHTMLAttributes } from "react";
 import { useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-interface ButtonProps {
+interface CustomButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   text: string;
-  addClassName?: string;
 }
 
-export default function Button({
+export default function CustomButton({
   text,
-  addClassName = "",
+  className,
   ...rest
-}: ButtonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
+}: CustomButtonProps) {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       disabled={pending}
-      className={`btn disabled:bg-neutral-400 disabled:text-neutral-300 disabled:cursor-not-allowed ${addClassName}`}
+      className={cn(
+        "disabled:bg-neutral-400 disabled:text-neutral-300 disabled:opacity-100",
+        className
+      )}
       {...rest}
     >
       {pending ? "로딩중..." : text}
-    </button>
+    </Button>
   );
 }

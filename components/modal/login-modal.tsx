@@ -74,10 +74,7 @@ export default function LoginModal() {
               errors={isFirst ? undefined : state?.fieldErrors.password}
               required
             />
-            <Button
-              text="로그인"
-              addClassName="btn-outline bg-black text-white"
-            />
+            <Button text="로그인" className="btn-outline bg-black text-white" />
           </form>
         </div>
       </dialog>

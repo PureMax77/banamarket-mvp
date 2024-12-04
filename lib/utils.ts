@@ -1,4 +1,10 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { adjectives, fruitsVegetables } from "./constants";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export function formatToTimeAgo(date: string): string {
   const dayInMs = 1000 * 60 * 60 * 24;

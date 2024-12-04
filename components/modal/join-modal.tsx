@@ -330,7 +330,7 @@ export default function JoinModal() {
                 {state?.fieldErrors.term_check}
               </div>
             </div>
-            <Button text="회원가입" addClassName="btn-outline" />
+            <Button text="회원가입" className="btn-outline" />
           </form>
         </div>
       </dialog>
