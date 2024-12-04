@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/solid";
+import { EllipsisVerticalIcon, ShareIcon } from "@heroicons/react/24/solid";
+import DownloadButton from "@/components/button/DownloadButton";
 
 enum TabType {
   ING = "ing",
@@ -12,7 +13,7 @@ export default function BizList() {
   const [selectedTab, setSelectedTab] = useState<TabType>(TabType.ING);
 
   return (
-    <div className="h-screen bg-yellow-100 bg-opacity-50 px-4 py-6">
+    <div className="h-screen relative bg-yellow-100 bg-opacity-50 px-4 py-6">
       <div className="flex flex-col gap-5">
         <div role="tablist" className="tabs tabs-bordered tabs-lg *:text-xl">
           <a
@@ -34,7 +35,6 @@ export default function BizList() {
         </div>
         <div className="flex flex-col p-5 bg-white border border-neutral-300 rounded-lg gap-5">
           <div className="flex flex-col">
-            <div>판매 중</div>
             <div className="flex justify-between">
               <span>판매 상품 이름</span>
               <span>총 3건 주문</span>
@@ -46,8 +46,13 @@ export default function BizList() {
           </div>
           <div className="flex justify-between items-center">
             <div className="flex gap-5">
-              <button className="btn w-24">공유하기</button>
-              <button className="btn">주문내역 확인</button>
+              <button className="btn w-28">
+                <div className="flex justify-center items-center gap-2">
+                  공유하기
+                  <ShareIcon className="w-5 h-5" />
+                </div>
+              </button>
+              <button className="btn w-28">주문내역 확인</button>
             </div>
             <div className="dropdown dropdown-left dropdown-end">
               <div tabIndex={0} role="button" className="btn">
@@ -68,6 +73,7 @@ export default function BizList() {
           </div>
         </div>
       </div>
+      <DownloadButton />
     </div>
   );
 }

@@ -10,8 +10,9 @@ import Input from "@/components/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatStrToNumber, getNextDayStartTime } from "@/lib/utils";
-import Image from "next/image";
 import PreviewCarousel from "@/components/carousel/preview-carousel";
+import TopBackButton from "@/components/button/TopBackButton";
+import { PATH_NAME } from "@/lib/constants";
 
 interface IOption {
   title: string;
@@ -127,6 +128,7 @@ export default function BizAdd() {
 
   return (
     <div className="bg-yellow-100 bg-opacity-50 px-4 py-6">
+      <TopBackButton href={PATH_NAME.BIZ} />
       <form action={onValid} className="flex flex-col gap-5 mb-20">
         {preview.length === 0 ? (
           <label
