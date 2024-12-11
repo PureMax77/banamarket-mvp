@@ -1,10 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Button from "../button";
-import Input from "../input";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 import { useFormState } from "react-dom";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { createAccount } from "@/app/(auth)/join/action";
 import {
   NAME_MAX_LENGTH,
@@ -14,52 +30,102 @@ import {
   PASSWORD_MIN_LENGTH,
   PhoneNumberRegex,
 } from "@/lib/constants";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+const formSchema = z.object({
+  email: z.string().email("유효한 이메일 주소를 입력해주세요."),
+  password: z
+    .string()
+    .min(
+      PASSWORD_MIN_LENGTH,
+      `비밀번호는 최소 ${PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`
+    )
+    .max(
+      PASSWORD_MAX_LENGTH,
+      `비밀번호는 최대 ${PASSWORD_MAX_LENGTH}자 이하여야 합니다.`
+    ),
+  confirm_password: z
+    .string()
+    .min(
+      PASSWORD_MIN_LENGTH,
+      `비밀번호는 최소 ${PASSWORD_MIN_LENGTH}자 이상이어야 합니다.`
+    )
+    .max(
+      PASSWORD_MAX_LENGTH,
+      `비밀번호는 최대 ${PASSWORD_MAX_LENGTH}자 이하여야 합니다.`
+    ),
+  name: z
+    .string()
+    .min(NAME_MIN_LENGTH, `이름은 최소 ${NAME_MIN_LENGTH}자 이상이어야 합니다.`)
+    .max(NAME_MAX_LENGTH, `이름은 최대 ${NAME_MAX_LENGTH}자 이하여야 합니다.`),
+  phone: z.string().regex(PhoneNumberRegex, "유효한 전화번호를 입력해주세요."),
+  adult_check: z
+    .boolean()
+    .refine((val) => val === true, "14세 이상임을 확인해주세요."),
+  term_check: z
+    .boolean()
+    .refine((val) => val === true, "이용약관에 동의해주세요."),
+  info_check: z
+    .boolean()
+    .refine((val) => val === true, "개인정보 수집 및 이용에 동의해주세요."),
+  ad_check: z.boolean(),
+});
 
 export default function JoinModal() {
-  const [state, dispatch] = useFormState(createAccount, null);
-
+  const [open, setOpen] = useState(false);
+  const [state, dispatch] = useFormState<any, FormData>(createAccount, {
+    fieldErrors: {},
+    formErrors: [],
+  });
   const [phoneNumber, setPhoneNumber] = useState<string>("010");
   const [code, setCode] = useState<string>("");
   const [isPhoneSend, setIsPhoneSend] = useState<boolean>(false);
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [isAllCheck, setIsAllCheck] = useState<boolean>(false);
-
   const [isLoadingReq, setIsLoadingReq] = useState<boolean>(false);
   const [isLoadingVery, setIsLoadingVery] = useState<boolean>(false);
 
-  // 에러메시지 초기화 용
-  const [isFirst, setIsFirst] = useState(true);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirm_password: "",
+      name: "",
+      phone: "010",
+      adult_check: false,
+      term_check: false,
+      info_check: false,
+      ad_check: false,
+    },
+  });
 
-  const [isAdultCheck, setIsAdultCheck] = useState<boolean>(false); // 14세 이상 동의
-  const [isTermCheck, setIsTermCheck] = useState<boolean>(false); // 이용약관 동의
-  const [isInfoCheck, setIsInfoCheck] = useState<boolean>(false); // 개인정보 동의
-  const [isAdCheck, setIsAdCheck] = useState<boolean>(false); // 광고수신 동의
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-
-  const handleAllCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsAllCheck(e.target.checked);
-    setIsAdultCheck(e.target.checked);
-    setIsTermCheck(e.target.checked);
-    setIsInfoCheck(e.target.checked);
-    setIsAdCheck(e.target.checked);
+  const handleAllCheckbox = (checked: boolean) => {
+    setIsAllCheck(checked);
+    form.setValue("adult_check", checked);
+    form.setValue("term_check", checked);
+    form.setValue("info_check", checked);
+    form.setValue("ad_check", checked);
   };
 
   const onPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (OnlyNumberRegex.test(e.target.value) || e.target.value === "") {
       setPhoneNumber(e.target.value);
+      form.setValue("phone", e.target.value);
     }
   };
 
   const onCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newCode = e.target.value;
     if (OnlyNumberRegex.test(newCode) || newCode === "") {
-      if (newCode.length > 6) return;
-      else setCode(newCode);
+      if (newCode.length <= 6) {
+        setCode(newCode);
+      }
     }
   };
 
-  // 휴대폰인증번호 전송
   const onPhoneSend = async () => {
     if (!PhoneNumberRegex.test(phoneNumber)) {
       return alert("잘못된 휴대폰번호입니다.");
@@ -92,7 +158,6 @@ export default function JoinModal() {
     }
   };
 
-  // 휴대폰번호 인증
   const onVerifyCode = async () => {
     if (code.length !== 6) {
       return alert("인증번호는 6자리입니다.");
@@ -126,214 +191,262 @@ export default function JoinModal() {
     }
   };
 
-  // 모달 닫힐때 clear 용
   useEffect(() => {
-    const dialog = dialogRef.current;
-
-    // 여기에 다이얼로그가 닫힐 때 실행할 로직을 추가할 수 있습니다.
-    const handleDialogClose = () => {
-      if (formRef.current) formRef.current.reset();
-      setPhoneNumber("010");
-      setCode("");
-      setIsAllCheck(false);
-      setIsAdultCheck(false);
-      setIsTermCheck(false);
-      setIsInfoCheck(false);
-      setIsAdCheck(false);
-      setIsFirst(true);
-    };
-
-    if (dialog) {
-      dialog.addEventListener("close", handleDialogClose);
+    if (!open) {
+      setTimeout(() => {
+        form.reset();
+        setPhoneNumber("010");
+        setCode("");
+        setIsAllCheck(false);
+        setIsPhoneSend(false);
+        setIsVerified(false);
+      }, 0);
     }
-
-    // 클린업 함수: 컴포넌트가 언마운트되거나 다이얼로그가 변경될 때 이벤트 리스너를 제거
-    return () => {
-      if (dialog) {
-        dialog.removeEventListener("close", handleDialogClose);
-      }
-    };
-  }, []);
+  }, [open]);
 
   useEffect(() => {
-    if (isAdultCheck && isTermCheck && isInfoCheck && isAdCheck) {
-      setIsAllCheck(true);
-    } else {
-      setIsAllCheck(false);
+    const watchFields = [
+      "adult_check",
+      "term_check",
+      "info_check",
+      "ad_check",
+    ] as const;
+    const values = form.watch(watchFields);
+    setIsAllCheck(values.every((value) => value === true));
+  }, [form]);
+
+  useEffect(() => {
+    if (state?.fieldErrors) {
+      Object.keys(state.fieldErrors).forEach((fieldName: string) => {
+        form.setError(fieldName as any, {
+          type: "server",
+          message: state.fieldErrors[fieldName]?.[0],
+        });
+      });
     }
-  }, [isAdultCheck, isTermCheck, isInfoCheck, isAdCheck]);
+  }, [state]);
 
   return (
-    <>
-      <button
-        className="text-neutral-500 mt-4 text-lg outline-none"
-        onClick={() => dialogRef.current?.showModal()}
-      >
-        이메일 회원가입
-      </button>
-      <dialog ref={dialogRef} id="join_modal" className="modal">
-        <div className="modal-box max-w-none w-full min-h-screen rounded-none flex justify-center items-center flex-col">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 outline-none">
-              ✕
-            </button>
-          </form>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="text-neutral-500 mt-4 text-lg">
+          이메일 회원가입
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>이메일 회원가입</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
           <form
-            ref={formRef}
-            action={(formData) => {
-              setIsFirst(false);
+            onSubmit={form.handleSubmit((data) => {
+              const formData = new FormData();
+              Object.entries(data).forEach(([key, value]) => {
+                formData.append(key, value.toString());
+              });
               dispatch(formData);
-            }}
-            className="flex flex-col gap-3 max-w-lg w-full"
+            })}
+            className="space-y-4"
           >
-            <h3 className="font-bold text-lg mb-2">이메일 회원가입</h3>
-            <Input
+            <FormField
+              control={form.control}
               name="email"
-              type="email"
-              placeholder="아이디(이메일)"
-              required
-              errors={isFirst ? undefined : state?.fieldErrors.email}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="아이디(이메일)" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <Input
+            <FormField
+              control={form.control}
               name="password"
-              type="password"
-              placeholder="비밀번호(영문,숫자,특수문자 8~20자리)"
-              minLength={PASSWORD_MIN_LENGTH}
-              maxLength={PASSWORD_MAX_LENGTH}
-              errors={isFirst ? undefined : state?.fieldErrors.password}
-              required
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="비밀번호(영문,숫자,특수문자 8~20자리)"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <Input
+            <FormField
+              control={form.control}
               name="confirm_password"
-              type="password"
-              placeholder="비밀번호 확인"
-              minLength={PASSWORD_MIN_LENGTH}
-              maxLength={PASSWORD_MAX_LENGTH}
-              errors={isFirst ? undefined : state?.fieldErrors.confirm_password}
-              required
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="비밀번호 확인"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <Input
+            <FormField
+              control={form.control}
               name="name"
-              type="text"
-              placeholder="이름"
-              minLength={NAME_MIN_LENGTH}
-              maxLength={NAME_MAX_LENGTH}
-              errors={isFirst ? undefined : state?.fieldErrors.name}
-              required
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="이름" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <div className="flex gap-3 w-full">
-              <Input
+            <div className="flex gap-2">
+              <FormField
+                control={form.control}
                 name="phone"
-                type="text"
-                value={phoneNumber}
-                onChange={onPhoneChange}
-                placeholder="휴대폰(숫자만 입력)"
-                errors={
-                  isFirst
-                    ? undefined
-                    : isVerified
-                    ? undefined
-                    : state?.fieldErrors.phone
-                }
-                readOnly={isVerified}
-                required
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input
+                        placeholder="휴대폰(숫자만 입력)"
+                        {...field}
+                        value={phoneNumber}
+                        onChange={onPhoneChange}
+                        readOnly={isVerified}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-              <button
+              <Button
                 type="button"
-                className="btn w-24"
                 onClick={onPhoneSend}
                 disabled={isVerified || isLoadingReq}
               >
                 {isLoadingReq ? "요청중..." : "인증요청"}
-              </button>
+              </Button>
             </div>
-            <div className="flex gap-3 w-full">
+            <div className="flex gap-2">
               <Input
-                name="verifyCode"
-                type="text"
+                placeholder="인증번호(6자리)"
                 value={code}
                 onChange={onCodeChange}
-                placeholder="인증번호(6자리)"
                 disabled={!isPhoneSend}
                 readOnly={isVerified}
               />
-              <button
+              <Button
                 type="button"
-                className="btn w-24"
                 onClick={onVerifyCode}
                 disabled={!isPhoneSend || isVerified || isLoadingVery}
               >
                 {isLoadingVery ? "인증중..." : "인증"}
-              </button>
+              </Button>
             </div>
-            <div className="flex flex-col gap-2 py-3 *:flex *:items-center *:gap-2">
-              <div>
-                <input
-                  type="checkbox"
-                  className="checkbox"
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="all-check"
                   checked={isAllCheck}
-                  onChange={handleAllCheckbox}
+                  onCheckedChange={handleAllCheckbox}
                 />
-                약관 전체 동의
+                <label htmlFor="all-check">약관 전체 동의</label>
               </div>
-              <div className="border h-px border-t-[0.5px] border-neutral-200 my-1" />
-              <div className="text-sm text-neutral-500">
-                <input
-                  name="adult_check"
-                  type="checkbox"
-                  className="checkbox"
-                  checked={isAdultCheck}
-                  onChange={(e: any) => setIsAdultCheck(e.target.checked)}
-                />
-                필수_만 14세 이상입니다.
-              </div>
-              <div className="text-sm text-neutral-500">
-                <input
-                  name="term_check"
-                  type="checkbox"
-                  className="checkbox"
-                  checked={isTermCheck}
-                  onChange={(e: any) => setIsTermCheck(e.target.checked)}
-                />
-                필수_이용약관 동의{" "}
-                <Link href={"/"} target="_blank" className="text-xs">
-                  [약관 보기]
-                </Link>
-              </div>
-              <div className="text-sm text-neutral-500">
-                <input
-                  name="info_check"
-                  type="checkbox"
-                  className="checkbox"
-                  checked={isInfoCheck}
-                  onChange={(e: any) => setIsInfoCheck(e.target.checked)}
-                />
-                필수_개인정보 수집 및 이용 동의{" "}
-                <Link href={"/"} target="_blank" className="text-xs">
-                  [약관 보기]
-                </Link>
-              </div>
-              <div className="text-sm text-neutral-500">
-                <input
-                  name="ad_check"
-                  type="checkbox"
-                  className="checkbox"
-                  checked={isAdCheck}
-                  onChange={(e: any) => setIsAdCheck(e.target.checked)}
-                />
-                선택_광고성 정보 수신 동의{" "}
-                <Link href={"/"} target="_blank" className="text-xs">
-                  [약관 보기]
-                </Link>
-              </div>
-              <div className="text-red-500 font-medium mt-2">
-                {state?.fieldErrors.term_check}
-              </div>
+              <hr className="my-2" />
+              <FormField
+                control={form.control}
+                name="adult_check"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>필수_만 14세 이상입니다.</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="term_check"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        필수_이용약관 동의{" "}
+                        <Link href="/" target="_blank" className="text-xs">
+                          [약관 보기]
+                        </Link>
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="info_check"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        필수_개인정보 수집 및 이용 동의{" "}
+                        <Link href="/" target="_blank" className="text-xs">
+                          [약관 보기]
+                        </Link>
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="ad_check"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        선택_광고성 정보 수신 동의{" "}
+                        <Link href="/" target="_blank" className="text-xs">
+                          [약관 보기]
+                        </Link>
+                      </FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
             </div>
-            <Button text="회원가입" className="btn-outline" />
+            <Button type="submit" className="w-full">
+              회원가입
+            </Button>
           </form>
-        </div>
-      </dialog>
-    </>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }

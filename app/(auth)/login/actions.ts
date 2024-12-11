@@ -19,7 +19,12 @@ import { goLogin } from "@/lib/session";
 // };
 
 const formSchema = z.object({
-  email: z.string().email().toLowerCase(),
+  email: z
+    .string({
+      required_error: "이메일이 필요합니다.",
+    })
+    .email("올바른 이메일 형식이 아닙니다.")
+    .toLowerCase(),
   password: z.string({
     required_error: "비밀번호가 필요합니다.",
   }),

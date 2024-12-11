@@ -1,83 +1,139 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Button from "../button";
-import Input from "../input";
+import { useState, useEffect } from "react";
 import { useFormState } from "react-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { login } from "@/app/(auth)/login/actions";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+
+const formSchema = z.object({
+  email: z.string().email("유효한 이메일 주소를 입력해주세요."),
+  password: z.string().min(1, "비밀번호를 입력해주세요."),
+});
 
 export default function LoginModal() {
-  const [state, dispatch] = useFormState(login, null);
+  const [open, setOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [state, dispatch] = useFormState(login, {
+    fieldErrors: {
+      email: [],
+      password: [],
+    },
+  });
 
-  // 에러메시지 초기화 용
-  const [isFirst, setIsFirst] = useState(true);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-
-  // 모달 닫힐때 clear 용
   useEffect(() => {
-    const dialog = dialogRef.current;
-
-    // 여기에 다이얼로그가 닫힐 때 실행할 로직을 추가할 수 있습니다.
-    const handleDialogClose = () => {
-      if (formRef.current) formRef.current.reset();
-      setIsFirst(true);
-    };
-
-    if (dialog) {
-      dialog.addEventListener("close", handleDialogClose);
+    if (!open) {
+      form.reset();
     }
+  }, [open]);
 
-    // 클린업 함수: 컴포넌트가 언마운트되거나 다이얼로그가 변경될 때 이벤트 리스너를 제거
-    return () => {
-      if (dialog) {
-        dialog.removeEventListener("close", handleDialogClose);
-      }
-    };
-  }, []);
+  useEffect(() => {
+    form.clearErrors();
+
+    if (state?.fieldErrors) {
+      state.fieldErrors.email?.forEach((error) => {
+        form.setError("email", { message: error });
+      });
+      state.fieldErrors.password?.forEach((error) => {
+        form.setError("password", { message: error });
+      });
+    }
+  }, [state]);
 
   return (
-    <>
-      <button
-        className="text-neutral-500 mt-4 text-lg outline-none"
-        onClick={() => dialogRef.current?.showModal()}
-      >
-        이메일 로그인
-      </button>
-      <dialog ref={dialogRef} id="join_modal" className="modal">
-        <div className="modal-box w-full max-w-96 flex justify-center items-center flex-col">
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 outline-none">
-              ✕
-            </button>
-          </form>
-          <form
-            ref={formRef}
-            action={(formData) => {
-              setIsFirst(false);
-              dispatch(formData);
-            }}
-            className="flex flex-col gap-3 max-w-lg w-full"
-          >
-            <h3 className="font-bold text-lg mb-2">이메일 로그인</h3>
-            <Input
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="text-neutral-500 mt-4 text-lg">
+          이메일 로그인
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>이메일 로그인</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form action={dispatch} className="space-y-4">
+            <FormField
+              control={form.control}
               name="email"
-              type="email"
-              placeholder="아이디(이메일)"
-              required
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder="아이디(이메일)"
+                      {...field}
+                      name="email"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <Input
+            <FormField
+              control={form.control}
               name="password"
-              type="password"
-              placeholder="비밀번호"
-              errors={isFirst ? undefined : state?.fieldErrors.password}
-              required
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="비밀번호"
+                        {...field}
+                        name="password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      >
+                        {showPassword ? (
+                          <EyeSlashIcon className="h-5 w-5" />
+                        ) : (
+                          <EyeIcon className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <Button text="로그인" className="btn-outline bg-black text-white" />
+            <Button
+              type="submit"
+              className="w-full bg-black text-white hover:bg-gray-800"
+            >
+              로그인
+            </Button>
           </form>
-        </div>
-      </dialog>
-    </>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
