@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productSchema, ProductType } from "./schema";
-import { getUploadUrl } from "./actions";
+import { getUploadUrl, uploadProduct } from "./actions";
 import { formatStrToNumber, getNextDayStartTime } from "@/lib/utils";
 import { PATH_NAME } from "@/lib/constants";
 import ImageUpload from "@/components/image-upload";
@@ -21,15 +21,20 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 interface IOption {
   title: string;
   price: string;
+  discount: string;
 }
 
-const initOption: IOption = { title: "", price: "0" };
+const initOption: IOption = { title: "", price: "0", discount: "0" };
 
 export default function BizAdd() {
+  const router = useRouter();
+
   const [preview, setPreview] = useState<string[]>([]);
   const [uploadUrl, setUploadUrl] = useState<string[]>([]);
   const [file, setFile] = useState<File[] | null>(null);
@@ -39,6 +44,7 @@ export default function BizAdd() {
   );
   const [isEndless, setIsEndless] = useState(false);
   const [options, setOptions] = useState<IOption[]>([initOption]);
+  const [submitLoading, setSubmitLoading] = useState<boolean>(false);
 
   const form = useForm<ProductType>({
     resolver: zodResolver(productSchema),
@@ -46,8 +52,10 @@ export default function BizAdd() {
       title: "",
       photo: [],
       description: "",
-      price: 0,
-      completionMessage: "",
+      startDate: new Date(),
+      endDate: new Date(getNextDayStartTime(7)),
+      options: [{ title: "", price: "0", discount: "0" }],
+      final_description: "",
     },
   });
 
@@ -110,7 +118,10 @@ export default function BizAdd() {
     field: keyof IOption,
     value: any
   ) => {
-    const newValue = field === "price" ? formatStrToNumber(value) : value;
+    const newValue =
+      field === "price" || field === "discount"
+        ? formatStrToNumber(value)
+        : value;
     setOptions((prev) => {
       const newOptions = JSON.parse(JSON.stringify(prev));
       newOptions[index][field] = newValue;
@@ -127,8 +138,58 @@ export default function BizAdd() {
   };
 
   const onSubmit = async (data: ProductType) => {
-    console.log(data);
-    // Implement your submit logic here
+    setSubmitLoading(true);
+
+    // 옵션의 문자열 값을 숫자로 변환
+    const formattedOptions = options.map((option) => ({
+      title: option.title,
+      price: parseInt(option.price) || 0,
+      discount: parseInt(option.discount) || 0,
+    }));
+
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("description", data.description);
+    formData.append("startDate", data.startDate.toISOString());
+    if (data.endDate) {
+      formData.append("endDate", data.endDate.toISOString());
+    }
+    formData.append("options", JSON.stringify(formattedOptions));
+    if (data.final_description) {
+      formData.append("final_description", data.final_description);
+    }
+    data.photo.forEach((photo) => {
+      formData.append("photo", photo);
+    });
+
+    try {
+      // 이미지 업로드
+      if (file && uploadUrl.length > 0) {
+        const uploadPromises = file.map((file, index) => {
+          const fileFormData = new FormData();
+          fileFormData.append("file", file);
+
+          return fetch(uploadUrl[index], {
+            method: "POST",
+            body: fileFormData,
+          });
+        });
+        await Promise.all(uploadPromises);
+      }
+
+      // 상품 등록
+      const result = await uploadProduct(formData);
+
+      if (result.success) {
+        router.push(PATH_NAME.BIZLIST);
+      } else if (result.error) {
+        console.error("Error creating product:", result.error);
+      }
+    } catch (error) {
+      console.error("Error uploading:", error);
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   return (
@@ -150,7 +211,11 @@ export default function BizAdd() {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="판매 상품 제목 입력" {...field} />
+                  <Input
+                    className="bg-white"
+                    placeholder="판매 상품 제목 입력"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -170,7 +235,12 @@ export default function BizAdd() {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Textarea placeholder="상품설명" rows={6} {...field} />
+                  <Textarea
+                    className="bg-white"
+                    placeholder="상품설명"
+                    rows={6}
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -186,11 +256,12 @@ export default function BizAdd() {
           />
           <FormField
             control={form.control}
-            name="completionMessage"
+            name="final_description"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <Textarea
+                    className="bg-white"
                     placeholder="주문완료문구(선택사항)"
                     rows={6}
                     {...field}
@@ -201,11 +272,22 @@ export default function BizAdd() {
             )}
           />
           <div className="flex justify-between">
-            <Button type="button" className="w-[48%]">
+            <Button type="button" className="w-[48%] text-lg h-12">
               우선 저장하기
             </Button>
-            <Button type="submit" className="w-[48%]">
-              판매 시작하기
+            <Button
+              disabled={submitLoading}
+              type="submit"
+              className="w-[48%] text-lg h-12"
+            >
+              {submitLoading ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  게시중...
+                </>
+              ) : (
+                "판매 시작하기"
+              )}
             </Button>
           </div>
         </form>

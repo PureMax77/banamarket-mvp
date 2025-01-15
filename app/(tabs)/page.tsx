@@ -7,13 +7,18 @@ async function getInitialProducts() {
   const products = await db.product.findMany({
     select: {
       title: true,
-      price: true,
-      discount: true,
       startDate: true,
       endDate: true,
       created_at: true,
       photo: true,
       id: true,
+      options: {
+        select: {
+          title: true,
+          price: true,
+          discount: true,
+        },
+      },
     },
     take: FEED_CONTENT_COUNT,
     orderBy: {

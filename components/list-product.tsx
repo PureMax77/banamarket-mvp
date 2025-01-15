@@ -5,28 +5,33 @@ import BigNumber from "bignumber.js";
 
 interface ListProductProps {
   title: string;
-  price: number;
-  discount: number | null;
   startDate: Date;
   endDate: Date | null;
   created_at: Date;
   photo: string[];
   id: number;
+  options: {
+    title: string;
+    price: number;
+    discount: number;
+  }[];
 }
 
 export default function ListProduct({
   title,
-  price,
-  discount,
   startDate,
   endDate,
   created_at,
   photo,
   id,
+  options,
 }: ListProductProps) {
-  const finalPrice = discount
-    ? BigNumber(price).multipliedBy(discount).dividedBy(100).toNumber()
-    : price;
+  const lowestPriceOption = options.reduce((min, current) =>
+    current.price < min.price ? current : min
+  );
+
+  const { price, discount } = lowestPriceOption;
+  const finalPrice = Math.round(price * (1 - discount / 100));
 
   return (
     <Link
@@ -44,15 +49,15 @@ export default function ListProduct({
       <div className="flex flex-col justify-center gap-1">
         <span className="text-lg">{title}</span>
         <div>
-          {discount && (
+          {/* {discount && (
             <span className="text-sm text-neutral-400 line-through">
               {formatToWon(price)}
             </span>
-          )}
+          )} */}
           <div className="flex items-end gap-1">
-            {discount && (
+            {/* {discount && (
               <span className="text-lg text-yellow-500">{discount}%</span>
-            )}
+            )} */}
             <span className="text-lg font-semibold">
               {formatToWon(finalPrice)}원
             </span>
