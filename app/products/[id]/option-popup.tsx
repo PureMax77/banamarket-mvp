@@ -20,9 +20,13 @@ import {
 import { TrashIcon } from "@heroicons/react/24/outline";
 
 interface ProductOption {
-  id: string;
-  name: string;
+  id: number;
+  title: string;
   price: number;
+  discount: number;
+  created_at: Date;
+  updated_at: Date;
+  productId: number;
 }
 
 interface SelectedOption extends ProductOption {
@@ -44,14 +48,14 @@ export function ProductOptionPopup({
 
   const handleOptionSelect = (optionId: string) => {
     const selectedOption = productOptions.find(
-      (option) => option.id === optionId
+      (option) => option.id.toString() === optionId
     );
     if (selectedOption) {
       setSelectedOptions((prev) => {
-        const existingOption = prev.find((item) => item.id === optionId);
+        const existingOption = prev.find((item) => item.id.toString() === optionId);
         if (existingOption) {
           return prev.map((item) =>
-            item.id === optionId
+            item.id.toString() === optionId
               ? { ...item, quantity: item.quantity + 1 }
               : item
           );
@@ -65,7 +69,7 @@ export function ProductOptionPopup({
     setSelectedOptions((prev) =>
       prev
         .map((item) =>
-          item.id === id
+          item.id.toString() === id
             ? { ...item, quantity: Math.max(0, item.quantity + change) }
             : item
         )
@@ -74,7 +78,7 @@ export function ProductOptionPopup({
   };
 
   const handleDeleteOption = (id: string) => {
-    setSelectedOptions((prev) => prev.filter((item) => item.id !== id));
+    setSelectedOptions((prev) => prev.filter((item) => item.id.toString() !== id));
   };
 
   const formatPrice = (price: number) => {
@@ -112,8 +116,8 @@ export function ProductOptionPopup({
               </SelectTrigger>
               <SelectContent>
                 {productOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {option.name} - {formatPrice(option.price)}
+                  <SelectItem key={option.id} value={option.id.toString()}>
+                    {option.title} - {formatPrice(option.price)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -128,13 +132,13 @@ export function ProductOptionPopup({
                   className="flex items-center justify-between"
                 >
                   <span>
-                    {option.name} - {formatPrice(option.price)}
+                    {option.title} - {formatPrice(option.price)}
                   </span>
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleQuantityChange(option.id, -1)}
+                      onClick={() => handleQuantityChange(option.id.toString(), -1)}
                     >
                       -
                     </Button>
@@ -142,14 +146,14 @@ export function ProductOptionPopup({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleQuantityChange(option.id, 1)}
+                      onClick={() => handleQuantityChange(option.id.toString(), 1)}
                     >
                       +
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteOption(option.id)}
+                      onClick={() => handleDeleteOption(option.id.toString())}
                     >
                       <TrashIcon className="h-5 w-5 text-red-500" />
                     </Button>

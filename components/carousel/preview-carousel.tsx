@@ -44,6 +44,10 @@ export default function PreviewCarousel({ preview }: PreviewCarouselProps) {
                       alt={`Preview image ${index + 1}`}
                       layout="fill"
                       objectFit="cover"
+                      // onError={(e) => {
+                      //   const target = e.target as HTMLImageElement;
+                      //   target.src = "/images/default-product.png";
+                      // }}
                     />
                   </div>
                 </CardContent>
