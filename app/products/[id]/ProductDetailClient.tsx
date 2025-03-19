@@ -86,6 +86,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}
         productOptions={product.options}
+        productId={product.id + ""}
       />
     </div>
   );

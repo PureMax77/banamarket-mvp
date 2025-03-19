@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 const noto = Noto_Sans({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${noto.variable} ${notoKR.variable} bg-neutral-200`}>
         <div className="m-screen-set bg-white">{children}</div>
+        <Toaster />
       </body>
     </html>
   );

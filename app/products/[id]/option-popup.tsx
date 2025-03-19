@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductOption {
   id: number;
@@ -37,31 +39,36 @@ interface ProductOptionPopupProps {
   isOpen: boolean;
   onClose: () => void;
   productOptions: ProductOption[];
+  productId: string;
 }
 
 export function ProductOptionPopup({
   isOpen,
   onClose,
   productOptions,
+  productId,
 }: ProductOptionPopupProps) {
   const [selectedOptions, setSelectedOptions] = useState<SelectedOption[]>([]);
+  const router = useRouter();
+  const { toast, dismiss } = useToast();
 
   const handleOptionSelect = (optionId: string) => {
     const selectedOption = productOptions.find(
       (option) => option.id.toString() === optionId
     );
     if (selectedOption) {
-      setSelectedOptions((prev) => {
-        const existingOption = prev.find((item) => item.id.toString() === optionId);
-        if (existingOption) {
-          return prev.map((item) =>
+      const existingOption = selectedOptions.find((item) => item.id.toString() === optionId);
+      if (existingOption) {
+        setSelectedOptions((prev) =>
+          prev.map((item) =>
             item.id.toString() === optionId
               ? { ...item, quantity: item.quantity + 1 }
               : item
-          );
-        }
-        return [...prev, { ...selectedOption, quantity: 1 }];
-      });
+          )
+        );
+      } else {
+        setSelectedOptions((prev) => [...prev, { ...selectedOption, quantity: 1 }]);
+      }
     }
   };
 
@@ -96,15 +103,62 @@ export function ProductOptionPopup({
     );
   }, [selectedOptions]);
 
-  const handlePurchase = () => {
-    // Implement purchase logic here
-    console.log("Purchasing:", selectedOptions);
+  const redirectToLogin = () => {
+    // 모든 토스트 닫기
+    dismiss();
+    // 로그인 페이지로 이동 및 팝업 닫기
+    router.push("/login");
     onClose();
+  };
+
+  const handlePurchase = async () => {
+    try {
+      // API를 통해 세션 확인
+      const response = await fetch('/api/auth/check-session');
+      const data = await response.json();
+      
+      if (!data.isAuthenticated) {
+        // 세션이 없으면 로그인 토스트 표시
+        toast({
+          title: "로그인이 필요합니다",
+          description: "구매하기 전에 로그인해주세요.",
+          variant: "destructive",
+          duration: 10000, // 10초 후 사라짐 (10000ms)
+          action: (
+            <Button 
+              variant="outline" 
+              onClick={redirectToLogin}
+              className="bg-red-300 hover:bg-red-500"
+            >
+              로그인
+            </Button>
+          ),
+        });
+        return;
+      }
+      
+      // 세션이 있으면 주문 페이지로 이동
+      const simplifiedOptions = selectedOptions.map(option => ({
+        id: option.id,
+        quantity: option.quantity
+      }));
+      const optionsParam = encodeURIComponent(JSON.stringify(simplifiedOptions));
+      router.push(`/products/${productId}/order?options=${optionsParam}`);
+      onClose();
+    } catch (error) {
+      console.error("세션 확인 중 오류 발생:", error);
+      toast({
+        title: "오류가 발생했습니다",
+        description: "잠시 후 다시 시도해주세요.",
+        variant: "destructive",
+        duration: 10000, // 10초 후 사라짐 (10000ms)
+      });
+    }
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="bottom" className="h-[80vh] flex flex-col">
+      <SheetContent side="bottom" className="m-screen-set h-[80vh] flex flex-col">
         <SheetHeader>
           <SheetTitle>상품 옵션 선택</SheetTitle>
         </SheetHeader>

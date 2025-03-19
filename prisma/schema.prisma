@@ -22,6 +22,7 @@ model User {
   smsToken_forEmail SMSTokenForEmail?
   smsToken_forPw    SMSTokenForPw?
   farms             Farm[]
+  addresses         DeliveryAddress[]
   created_at        DateTime          @default(now())
   updated_at        DateTime          @updatedAt
 }
@@ -69,6 +70,20 @@ model SMSTokenForPw {
   userId     Int      @unique
 }
 
+model DeliveryAddress {
+  id            Int      @id @default(autoincrement())
+  name          String
+  phone         String
+  zipCode       String
+  address       String
+  detailAddress String
+  memo          String?
+  isDefault     Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+}
 
 model Product {
   id                Int             @id @default(autoincrement())
