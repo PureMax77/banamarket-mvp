@@ -42,7 +42,12 @@ async function getProduct(id: number) {
         id,
       },
       include: {
-        options: true
+        options: true,
+        farm: {
+          include: {
+            user: true
+          }
+        }
       },
     });
     if (!product) throw new Error("Product not found");

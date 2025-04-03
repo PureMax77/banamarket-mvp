@@ -11,6 +11,11 @@ import AddressListModal from "./address-list-modal";
 import AddressFormModal from "./address-form-modal";
 import { User } from "@prisma/client";
 import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
+import OrderSuccessModal from "./order-success-modal";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface OrderClientProps {
   product: OrderProductType;
@@ -20,11 +25,20 @@ interface OrderClientProps {
 
 export default function OrderClient({ product, selectedOptions, user }: OrderClientProps) {
   const { toast } = useToast();
+  const router = useRouter();
   const [showAddressModal, setShowAddressModal] = useState(false)
   const [showAddressForm, setShowAddressForm] = useState(false)
+  const [showOrderSuccessModal, setShowOrderSuccessModal] = useState(false)
   const [editingAddress, setEditingAddress] = useState<any>(null)
   const [addresses, setAddresses] = useState(user.addresses)
   const [isSettingDefault, setIsSettingDefault] = useState(false)
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false)
+  const [depositorName, setDepositorName] = useState("")
+  const [orderAccountInfo, setOrderAccountInfo] = useState<{
+    bankType: string;
+    accountNumber: string;
+    accountHolder: string;
+  } | null>(null)
 
   // 기본 배송지 또는 첫 번째 배송지를 기본값으로 설정
   const defaultAddress = addresses.length > 0 ? addresses[0] : null;
@@ -220,6 +234,172 @@ export default function OrderClient({ product, selectedOptions, user }: OrderCli
     0
   );
 
+  // 입금자명 유효성 검사 함수
+  const validateDepositorName = (name: string): { isValid: boolean; message?: string } => {
+    // 빈 문자열 체크
+    if (!name.trim()) {
+      return { 
+        isValid: false, 
+        message: "입금자명을 입력해주세요." 
+      };
+    }
+
+    // 최소 길이 체크 (최소 2글자)
+    if (name.trim().length < 2) {
+      return { 
+        isValid: false, 
+        message: "입금자명은 최소 2글자 이상이어야 합니다." 
+      };
+    }
+
+    // 자음/모음만 있는지 확인 (ㄱㄴㄷ, ㅏㅑㅓ 등)
+    const singleJamoPattern = /[ㄱ-ㅎㅏ-ㅣ]/;
+    if (singleJamoPattern.test(name)) {
+      return {
+        isValid: false,
+        message: "자음이나 모음만으로 구성된 이름은 사용할 수 없습니다."
+      };
+    }
+
+    // 한글 이름 체크 (완성형 한글만 허용)
+    const koreanPattern = /^[가-힣]+$/;
+    if (koreanPattern.test(name)) {
+      // 한글 이름은 일반적으로 2~5자리
+      if (name.trim().length > 5) {
+        return {
+          isValid: false,
+          message: "한글 이름은 일반적으로 5자리 이하입니다."
+        };
+      }
+    }
+
+    // 영문 이름 체크 (영문 알파벳과 공백만 허용)
+    const englishPattern = /^[a-zA-Z\s]+$/;
+    if (englishPattern.test(name) && name.trim().length < 3) {
+      return { 
+        isValid: false, 
+        message: "영문 이름은 최소 3글자 이상이어야 합니다." 
+      };
+    }
+
+    // 특수문자 체크
+    const specialCharPattern = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+    if (specialCharPattern.test(name)) {
+      return { 
+        isValid: false, 
+        message: "이름에 특수문자를 포함할 수 없습니다." 
+      };
+    }
+
+    // 숫자 체크
+    const numberPattern = /[0-9]/;
+    if (numberPattern.test(name)) {
+      return {
+        isValid: false,
+        message: "이름에 숫자를 포함할 수 없습니다."
+      };
+    }
+
+    return { isValid: true };
+  };
+
+  const handlePlaceOrder = async () => {
+    // 배송지가 선택되었는지 확인
+    if (!selectedAddress) {
+      toast({
+        variant: "destructive",
+        title: "배송지를 선택해주세요",
+        description: "주문을 진행하기 위해서는 배송지 정보가 필요합니다."
+      });
+      return;
+    }
+    
+    // 선택된 옵션이 있는지 확인
+    if (selectedOptions.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "선택된 상품이 없습니다",
+        description: "주문할 상품을 선택해주세요."
+      });
+      return;
+    }
+    
+    // 입금자명 유효성 검사
+    const nameValidation = validateDepositorName(depositorName);
+    if (!nameValidation.isValid) {
+      toast({
+        variant: "destructive",
+        title: "입금자명이 올바르지 않습니다",
+        description: nameValidation.message
+      });
+      return;
+    }
+
+    setIsProcessingOrder(true);
+    
+    try {      
+      // 주문 API 호출
+      const response = await fetch('/api/order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product,
+          selectedOptions,
+          selectedAddress,
+          depositorName,
+          totalAmount: totalPrice
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '주문 처리 중 오류가 발생했습니다.');
+      }
+
+      // 주문 성공 시 주문 정보 받기
+      const orderData = await response.json();
+      console.log('주문 성공:', orderData);
+      
+      // 주문 성공 시 계좌 정보를 state에 저장
+      if (orderData.bankType && orderData.accountNumber && orderData.accountHolder) {
+        setOrderAccountInfo({
+          bankType: orderData.bankType,
+          accountNumber: orderData.accountNumber,
+          accountHolder: orderData.accountHolder
+        });
+      } else {
+        throw new Error('주문 데이터에 계좌 정보가 없습니다.');
+      }
+      
+      // 주문 성공 모달 표시
+      setShowOrderSuccessModal(true);
+      
+    } catch (error) {
+      console.error('주문 처리 오류:', error);
+      toast({
+        variant: "destructive",
+        title: "주문 처리 중 오류가 발생했습니다",
+        description: error instanceof Error ? error.message : "잠시 후 다시 시도해주세요."
+      });
+    } finally {
+      setIsProcessingOrder(false);
+    }
+  };
+
+  // 주문 성공 후 완료 처리 
+  const handleOrderComplete = () => {
+    setShowOrderSuccessModal(false);
+    // 주문 완료 후 필요한 처리 (예: 주문 목록 페이지로 이동)
+    router.push('/');
+    
+    toast({
+      title: "주문이 완료되었습니다",
+      description: "마이페이지에서 주문 내역을 확인할 수 있습니다."
+    });
+  };
+
   return (
     <div className="min-h-screen w-full space-y-4 bg-yellow-50 p-4 shadow-sm">
       {/* Header */}
@@ -278,16 +458,17 @@ export default function OrderClient({ product, selectedOptions, user }: OrderCli
 
       <Separator className="my-4" />
 
-      {/* Memo Sections */}
-      <div className="space-y-4">
-        <Textarea placeholder="배송 시 요청사항" className="min-h-[80px] resize-none bg-white" />
-        <Textarea placeholder="매장 시 요청사항" className="min-h-[80px] resize-none bg-white" />
-      </div>
-
       {/* Order Details */}
       <div className="rounded-lg border bg-white p-4">
         <div className="mb-4 flex items-center gap-2">
-          <div className="h-6 w-6 rounded-full bg-[#f3e8d5]" />
+        <div className="relative size-28 min-w-28 rounded-md overflow-hidden">
+        <Image
+          fill
+          src={`${product.photo[0]}/avatar`}
+          alt={product.title}
+          className="object-cover"
+        />
+      </div>
           <span className="font-medium">{product.title}</span>
         </div>
 
@@ -328,9 +509,39 @@ export default function OrderClient({ product, selectedOptions, user }: OrderCli
         </div>
       </div>
 
+      {/* 입금자명 입력 */}
+      <Card className="bg-white p-4">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="depositor-name" className="font-medium">
+              계좌이체 입금자명
+            </Label>
+            <span className="text-sm text-red-500">*필수 입력</span>
+          </div>
+          <div className="space-y-1">
+            <Input 
+              id="depositor-name"
+              type="text"
+              value={depositorName}
+              onChange={(e) => setDepositorName(e.target.value)}
+              placeholder="입금자명을 입력하세요"
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">
+              실제 입금하시는 분의 이름과 동일하게 입력해주세요.
+            </p>
+          </div>
+        </div>
+      </Card>
+
       {/* Bottom Button */}
-      <Button className="w-full" size="lg">
-        주문하기
+      <Button 
+        className="w-full" 
+        size="lg"
+        onClick={handlePlaceOrder}
+        disabled={isProcessingOrder}
+      >
+        {isProcessingOrder ? "처리 중..." : "주문하기"}
       </Button>
 
       {showAddressModal && (
@@ -355,6 +566,15 @@ export default function OrderClient({ product, selectedOptions, user }: OrderCli
           initialData={editingAddress}
           user={user}
           refreshAddresses={refreshAddresses}
+        />
+      )}
+      
+      {showOrderSuccessModal && (
+        <OrderSuccessModal
+          onClose={handleOrderComplete}
+          totalAmount={totalPrice}
+          depositorName={depositorName}
+          accountInfo={orderAccountInfo!}
         />
       )}
     </div>
