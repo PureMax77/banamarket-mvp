@@ -57,7 +57,7 @@ export default async function Profile() {
               나의거래
             </div>
             <div>찜한 상품</div>
-            <div>구매 내역</div>
+            <Link href={PATH_NAME.ORDERSEARCH}>주문/배송</Link>
           </div>
           <div className="flex flex-col gap-4 *:cursor-pointer">
             <div className="text-yellow-400 font-bold !cursor-default">

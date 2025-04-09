@@ -21,6 +21,7 @@ export const PATH_NAME = {
   PRICE: "/price",
   CHATS: "/chats",
   PROFILE: "/profile",
+  ORDERSEARCH: "/ordersearch",
   BIZ: "/biz",
   BIZLIST: "/biz/list",
   BIZADD: "/biz/add",

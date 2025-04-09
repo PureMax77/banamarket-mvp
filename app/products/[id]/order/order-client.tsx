@@ -16,6 +16,8 @@ import OrderSuccessModal from "./order-success-modal";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ChevronLeft } from "lucide-react"
+import { PATH_NAME } from "@/lib/constants";
 
 interface OrderClientProps {
   product: OrderProductType;
@@ -39,6 +41,10 @@ export default function OrderClient({ product, selectedOptions, user }: OrderCli
     accountNumber: string;
     accountHolder: string;
   } | null>(null)
+  
+  const handleGoBack = () => {
+    router.back();
+  }
 
   // 기본 배송지 또는 첫 번째 배송지를 기본값으로 설정
   const defaultAddress = addresses.length > 0 ? addresses[0] : null;
@@ -391,18 +397,21 @@ export default function OrderClient({ product, selectedOptions, user }: OrderCli
   // 주문 성공 후 완료 처리 
   const handleOrderComplete = () => {
     setShowOrderSuccessModal(false);
-    // 주문 완료 후 필요한 처리 (예: 주문 목록 페이지로 이동)
-    router.push('/');
-    
-    toast({
-      title: "주문이 완료되었습니다",
-      description: "마이페이지에서 주문 내역을 확인할 수 있습니다."
-    });
+    router.push(PATH_NAME.ORDERSEARCH);
   };
 
   return (
-    <div className="min-h-screen w-full space-y-4 bg-yellow-50 p-4 shadow-sm">
-      {/* Header */}
+    <div className="min-h-screen w-full space-y-4 bg-yellow-50 shadow-sm">
+      {/* 뒤로가기 헤더 */}
+      <div className="flex items-center px-4 py-3 border-b bg-white">
+        <button onClick={handleGoBack} className="mr-2">
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-xl font-medium">주문 정보</h1>
+      </div>
+      
+      <div className="p-4 space-y-4">
+      {/* 배송 정보 */}
       <Card className="bg-white p-4">
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
@@ -577,6 +586,7 @@ export default function OrderClient({ product, selectedOptions, user }: OrderCli
           accountInfo={orderAccountInfo!}
         />
       )}
+      </div>
     </div>
   );
 } 

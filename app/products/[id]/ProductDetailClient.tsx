@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductOptionPopup } from "./option-popup";
@@ -14,6 +16,7 @@ interface ProductDetailClientProps {
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const router = useRouter();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("ko-KR", {
@@ -37,50 +40,58 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   };
 
   return (
-    <div className="container">
-        <div className="w-full min-h-screen flex flex-col justify-between p-6 space-y-6">
-          <PreviewCarousel preview={getPhotosWithPublic()} />
+    <div className="container flex flex-col">
+      {/* Header */}
+      <div className="flex items-center px-4 py-3 border-b">
+        <button onClick={() => router.back()} className="mr-2">
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <h1 className="text-xl font-medium">상품 정보</h1>
+      </div>
+      
+      <div className="w-full flex-1 flex flex-col justify-between p-6 space-y-6">
+        <PreviewCarousel preview={getPhotosWithPublic()} />
 
-          <div className="space-y-4">
-            <div className="flex justify-between items-start">
-              <h1 className="text-2xl font-semibold">{product.title}</h1>
-              <span className="text-2xl font-bold text-green-700">
-                {formatPrice(getMinPrice())}
-              </span>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">판매 기간</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">
-                  {formatDate(product.startDate.toString())} ~{" "}
-                  {product.endDate ? formatDate(product.endDate.toString()) : "미정"}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">상품 설명</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 whitespace-pre-line">
-                  {product.description}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Button
-              className="w-full bg-[#a7d1fa] hover:bg-[#8bc1fa] text-black mt-4"
-              size="lg"
-              onClick={() => setIsPopupOpen(true)}
-            >
-              구매하기
-            </Button>
+        <div className="space-y-4">
+          <div className="flex justify-between items-start">
+            <h1 className="text-2xl font-semibold">{product.title}</h1>
+            <span className="text-2xl font-bold text-green-700">
+              {formatPrice(getMinPrice())}
+            </span>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">판매 기간</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">
+                {formatDate(product.startDate.toString())} ~{" "}
+                {product.endDate ? formatDate(product.endDate.toString()) : "미정"}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">상품 설명</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 whitespace-pre-line">
+                {product.description}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Button
+            className="w-full bg-[#a7d1fa] hover:bg-[#8bc1fa] text-black mt-4"
+            size="lg"
+            onClick={() => setIsPopupOpen(true)}
+          >
+            구매하기
+          </Button>
         </div>
+      </div>
 
       <ProductOptionPopup
         isOpen={isPopupOpen}
