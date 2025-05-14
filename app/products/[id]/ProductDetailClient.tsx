@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductOptionPopup } from "./option-popup";
 import { ProductType } from "./page";
 import PreviewCarousel from "@/components/carousel/preview-carousel";
+import HeaderWithTitle from "@/components/BackHeader";
 
 interface ProductDetailClientProps {
   product: ProductType;
@@ -33,7 +33,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const getMinPrice = () => {
     if (!product.options || product.options.length === 0) return 0;
     return Math.min(...product.options.map(option => option.price));
-    };
+  };
 
   const getPhotosWithPublic = () => {
     return product.photo.map(url => `${url}/public`);
@@ -42,13 +42,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   return (
     <div className="container flex flex-col">
       {/* Header */}
-      <div className="flex items-center px-4 py-3 border-b">
-        <button onClick={() => router.back()} className="mr-2">
-          <ChevronLeft className="h-6 w-6" />
-        </button>
-        <h1 className="text-xl font-medium">상품 정보</h1>
-      </div>
-      
+      <HeaderWithTitle title="상품 정보" />
+
       <div className="w-full flex-1 flex flex-col justify-between p-6 space-y-6">
         <PreviewCarousel preview={getPhotosWithPublic()} />
 

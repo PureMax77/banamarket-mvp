@@ -20,7 +20,6 @@ export async function uploadProduct(formData: FormData) {
         discount: option.discount + "",
       })
     ),
-    final_description: formData.get("final_description")?.toString(),
   };
 
   const result = productSchema.safeParse(data);
@@ -55,7 +54,6 @@ export async function uploadProduct(formData: FormData) {
         photo: result.data.photo,
         startDate: result.data.startDate,
         endDate: result.data.endDate,
-        final_description: result.data.final_description,
         farmId: farmId,
         options: {
           create: result.data.options.map((option) => ({

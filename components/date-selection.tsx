@@ -26,30 +26,35 @@ export default function DateSelection({
         <CardTitle>판매 기간 설정</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-4">
-          <div>시작</div>
-          <DatePicker
-            selected={startDate}
-            onChange={(date: Date | null) => setStartDate(date)}
-            showTimeSelect
-            dateFormat="Pp"
-            className="p-2 border rounded hover:cursor-pointer"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <div>종료</div>
-          {!isEndless && (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <div className="font-medium">시작</div>
             <DatePicker
-              selected={endDate}
-              onChange={(date: Date | null) => setEndDate(date)}
+              selected={startDate}
+              onChange={(date: Date | null) => setStartDate(date)}
               showTimeSelect
               dateFormat="Pp"
-              className="p-2 border rounded hover:cursor-pointer"
+              className="p-2 border rounded hover:cursor-pointer w-full"
             />
-          )}
-          <Button type="button" onClick={() => setIsEndless(!isEndless)}>
-            {isEndless ? "종료 시점 설정" : "상시 판매"}
-          </Button>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="font-medium">종료</div>
+              {!isEndless && (
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date: Date | null) => setEndDate(date)}
+                  showTimeSelect
+                  dateFormat="Pp"
+                  className="p-2 border rounded hover:cursor-pointer w-full"
+                />
+              )}
+            </div>
+            <Button type="button" onClick={() => setIsEndless(!isEndless)} className="self-end mb-1">
+              {isEndless ? "종료 시점 설정" : "상시 판매"}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -18,7 +18,7 @@ export default function ImageUpload({
       {preview.length === 0 ? (
         <label
           htmlFor="photo"
-          className="border-2 aspect-square flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-lg border-dashed cursor-pointer bg-center bg-cover"
+          className="border-2 aspect-square flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-lg border-dashed cursor-pointer bg-center bg-cover shadow-md"
         >
           <PhotoIcon className="w-20" />
           <div className="text-neutral-400 text-sm">

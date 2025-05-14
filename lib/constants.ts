@@ -25,7 +25,6 @@ export const PATH_NAME = {
   BIZ: "/biz",
   BIZLIST: "/biz/list",
   BIZADD: "/biz/add",
-  BIZLISTDOWN: "/biz/list/download",
 };
 
 export const PhoneNumberRegex = /^(01[016789]{1})-?[0-9]{3,4}-?[0-9]{4}$/;

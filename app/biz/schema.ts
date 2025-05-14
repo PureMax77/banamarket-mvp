@@ -21,7 +21,6 @@ export const productSchema = z.object({
   startDate: z.date(),
   endDate: z.date().optional(),
   options: z.array(productOptionFormSchema),
-  final_description: z.string().optional(),
 });
 
 export type ProductType = z.infer<typeof productSchema>;

@@ -106,7 +106,7 @@ export default function OrderSearchClient() {
   const fetchOrders = async (status?: OrderStatus, year?: string) => {
     setLoading(true);
     try {
-      let url = "/api/orders";
+      let url = "/api/ordersearch";
       const params = new URLSearchParams();
       
       if (status) {
