@@ -1,4 +1,13 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 바나마켓 (Bana Market)
+
+싸고 품질 좋은 농산물 직거래 플랫폼 (A platform for direct transactions of cheap and high-quality agricultural products)
+
+## Key Features
+
+- User authentication (join, login, Kakao login)
+- Product listing and viewing
+- Product registration for businesses
+- Order management
 
 ## Getting Started
 
