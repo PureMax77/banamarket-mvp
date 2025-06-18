@@ -14,10 +14,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { format, parseISO } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, ArrowLeft, Download } from "lucide-react";
 import HeaderWithTitle from "@/components/BackHeader";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import DownloadButtonId from "@/components/button/DownloadButton_id";
 
 // 테이블 컴포넌트 타입 정의
 interface TableProps {
@@ -35,7 +36,7 @@ interface TableCellProps {
 
 // Table 컴포넌트
 const Table: React.FC<TableProps> = ({ children }) => {
-    return <table className="w-full border-collapse">{children}</table>;
+    return <table className="w-full min-w-[500px] border-collapse">{children}</table>;
 };
 
 const TableHeader: React.FC<TableComponentProps> = ({ children }) => {
@@ -122,6 +123,123 @@ export default function ProductOrdersPage() {
     // 필터링된 주문
     const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
 
+    // 다운로드 핸들러 함수들
+    const handleDownloadNotDownloaded = async () => {
+        try {
+            const response = await fetch('/api/download/down-id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId,
+                    downloadType: 'notDownloaded'
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert(errorData.error || '다운로드 중 오류가 발생했습니다.');
+                return;
+            }
+
+            // 파일 다운로드
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+
+            // 파일명 추출 (Content-Disposition 헤더에서)
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let fileName = `주문내역_미다운_상품${productId}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            if (contentDisposition) {
+                const fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+                if (fileNameMatch) {
+                    fileName = decodeURIComponent(fileNameMatch[1]);
+                }
+            }
+
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            // 다운로드 완료 후 주문 목록 새로고침
+            const fetchResponse = await fetch(`/api/product/${productId}/orders`);
+            if (fetchResponse.ok) {
+                const data = await fetchResponse.json();
+                setProduct(data);
+                setFilteredOrders(data.orders || []);
+            }
+
+            alert('미다운로드 엑셀 다운로드가 완료되었습니다.');
+        } catch (error) {
+            console.error('다운로드 오류:', error);
+            alert('다운로드 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleDownloadAll = async () => {
+        try {
+            const response = await fetch('/api/download/down-id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId,
+                    downloadType: 'all'
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert(errorData.error || '다운로드 중 오류가 발생했습니다.');
+                return;
+            }
+
+            // 파일 다운로드
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+
+            // 파일명 추출 (Content-Disposition 헤더에서)
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let fileName = `주문내역_상품${productId}_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            if (contentDisposition) {
+                const fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+                if (fileNameMatch) {
+                    fileName = decodeURIComponent(fileNameMatch[1]);
+                }
+            }
+
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            // 다운로드 완료 후 주문 목록 새로고침
+            const fetchResponse = await fetch(`/api/product/${productId}/orders`);
+            if (fetchResponse.ok) {
+                const data = await fetchResponse.json();
+                setProduct(data);
+                setFilteredOrders(data.orders || []);
+            }
+
+            alert('엑셀 다운로드가 완료되었습니다.');
+        } catch (error) {
+            console.error('다운로드 오류:', error);
+            alert('다운로드 중 오류가 발생했습니다.');
+        }
+    };
+
     // 상품 데이터와 주문 가져오기
     useEffect(() => {
         const fetchProductOrders = async () => {
@@ -196,13 +314,13 @@ export default function ProductOrdersPage() {
     }
 
     return (
-        <div className="container mx-auto min-h-screen">
+        <div className="container mx-auto min-h-screen pb-28">
             <HeaderWithTitle title="상세 주문내역" />
 
             <div className="px-4">
                 {/* 상품 기본 정보 */}
                 <Card className="my-4">
-                    <CardContent>
+                    <CardContent className="mt-6">
                         <div className="flex flex-col md:flex-row gap-4">
                             {product.photo && product.photo.length > 0 && (
                                 <div className="w-full md:w-1/4">
@@ -229,12 +347,12 @@ export default function ProductOrdersPage() {
                         <CardTitle>주문 필터</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 gap-3">
                             {/* 기간 필터 */}
                             <div className="space-y-2">
                                 <Label>주문 기간</Label>
                                 <div className="flex items-center space-x-2">
-                                    <div className="relative w-full">
+                                    <div className="relative">
                                         <DatePicker
                                             selected={startDate}
                                             onChange={(date: Date | null) => setStartDate(date || undefined)}
@@ -250,7 +368,7 @@ export default function ProductOrdersPage() {
                                         />
                                     </div>
                                     <span className="flex items-center">~</span>
-                                    <div className="relative w-full">
+                                    <div className="relative">
                                         <DatePicker
                                             selected={endDate}
                                             onChange={(date: Date | null) => setEndDate(date || undefined)}
@@ -268,7 +386,7 @@ export default function ProductOrdersPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {/* 운송장 미다운로드 필터 */}
                                 <div className="space-y-2">
                                     <Label>운송장 상태</Label>
@@ -284,7 +402,7 @@ export default function ProductOrdersPage() {
                                             htmlFor="not-downloaded"
                                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
-                                            운송장 미다운로드만 보기
+                                            미다운로드만 보기
                                         </label>
                                     </div>
                                 </div>
@@ -313,40 +431,49 @@ export default function ProductOrdersPage() {
                     <CardHeader>
                         <CardTitle>주문 내역 ({filteredOrders.length}건)</CardTitle>
                     </CardHeader>
+
+                    {/* 엑셀다운 버튼 컴포넌트 */}
+                    <DownloadButtonId
+                        onDownloadNotDownloaded={handleDownloadNotDownloaded}
+                        onDownloadAll={handleDownloadAll}
+                    />
+
                     <CardContent>
                         {filteredOrders.length === 0 ? (
                             <div className="text-center py-8">주문 내역이 없습니다.</div>
                         ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>주문번호</TableHead>
-                                        <TableHead>주문일</TableHead>
-                                        <TableHead>주문자</TableHead>
-                                        <TableHead>총 주문금액</TableHead>
-                                        <TableHead>운송장 다운</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredOrders.map((order) => (
-                                        <TableRow key={order.id}>
-                                            <TableCell>{order.orderNumber}</TableCell>
-                                            <TableCell>{formatDate(order.created_at)}</TableCell>
-                                            <TableCell>{order.user.username}</TableCell>
-                                            <TableCell className="font-bold">
-                                                {order.totalAmount.toLocaleString()}원
-                                            </TableCell>
-                                            <TableCell>
-                                                {order.isInvoiceDownloaded ? (
-                                                    <span>✓</span>
-                                                ) : (
-                                                    <span></span>
-                                                )}
-                                            </TableCell>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>주문번호</TableHead>
+                                            <TableHead>주문일</TableHead>
+                                            <TableHead>주문자</TableHead>
+                                            <TableHead>총 주문금액</TableHead>
+                                            <TableHead>다운여부</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredOrders.map((order) => (
+                                            <TableRow key={order.id}>
+                                                <TableCell>{order.orderNumber}</TableCell>
+                                                <TableCell>{formatDate(order.created_at)}</TableCell>
+                                                <TableCell>{order.user.username}</TableCell>
+                                                <TableCell className="font-bold">
+                                                    {order.totalAmount.toLocaleString()}원
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    {order.isInvoiceDownloaded ? (
+                                                        <span>✓</span>
+                                                    ) : (
+                                                        <span></span>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         )}
                     </CardContent>
                 </Card>

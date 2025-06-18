@@ -16,18 +16,18 @@ export async function POST(request: NextRequest) {
       status: 400,
     });
   }
-
+  console.log(phoneNumber);
   // 해당번호 유저 조회
   const user = await db.user.findUnique({
     where: {
       phone: phoneNumber,
     },
   });
-  if (user) {
-    return new Response(JSON.stringify({ msg: "이미 가입된 번호입니다." }), {
-      status: 400,
-    });
-  }
+  // if (user) {
+  //   return new Response(JSON.stringify({ msg: "이미 가입된 번호입니다." }), {
+  //     status: 400,
+  //   });
+  // }
 
   // 문자 보내기 함수
   const sendSMS = async () => {

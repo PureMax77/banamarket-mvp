@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Download } from "lucide-react";
+import { Check, Download, ArrowLeft } from "lucide-react";
 
 export interface DownloadButtonProps {
   onDownloadModeChange: (isDownloadMode: boolean) => void;
@@ -27,7 +27,7 @@ export default function DownloadButton({
         onClick={toggleDownloadMode}
         className="flex items-center justify-center px-4 py-2 rounded-md font-medium"
       >
-        {isDownloadMode ? "돌아가기" : "운송장 다운"}
+        {isDownloadMode ? <ArrowLeft className="w-4 h-4" /> : "엑셀다운"}
       </Button>
 
       {isDownloadMode && (
@@ -46,7 +46,7 @@ export default function DownloadButton({
             className="flex items-center justify-center px-4 py-2 rounded-md font-medium bg-yellow-400"
           >
             <Download className="w-4 h-4" />
-            운송장 다운
+            엑셀다운
           </Button>
         </>
       )}

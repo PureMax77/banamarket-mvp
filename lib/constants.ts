@@ -78,3 +78,13 @@ export const adjectives = [
   "신나는",
   "기분좋은",
 ];
+
+// 주문 상태 한글 매핑
+export const ORDER_STATUS_KOREAN = {
+  PENDING_PAYMENT: "입금 대기",
+  PREPARING: "상품 준비중",
+  SHIPPING: "배송중",
+  DELIVERED: "배송 완료",
+  CANCELED: "주문 취소",
+  REFUNDED: "환불 완료"
+} as const;
