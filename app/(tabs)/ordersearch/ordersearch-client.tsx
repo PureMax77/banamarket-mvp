@@ -108,25 +108,25 @@ export default function OrderSearchClient() {
     try {
       let url = "/api/ordersearch";
       const params = new URLSearchParams();
-      
+
       if (status) {
         params.append("status", status);
       }
-      
+
       if (year && year !== "all") {
         params.append("year", year);
       }
-      
+
       if (params.toString()) {
         url += `?${params.toString()}`;
       }
-      
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error("주문 목록을 불러오는데 실패했습니다.");
       }
-      
+
       const data = await response.json();
       setOrders(data);
     } catch (err) {
@@ -218,7 +218,7 @@ export default function OrderSearchClient() {
               </SelectContent>
             </Select>
           </div>
-          
+
           <div className="w-1/3">
             <Select defaultValue={new Date().getFullYear().toString()} onValueChange={handleYearChange}>
               <SelectTrigger className="w-full">
@@ -234,116 +234,117 @@ export default function OrderSearchClient() {
             </Select>
           </div>
         </div>
-        
+
         <div className="mt-0">
-            {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-                <p>주문 내역이 없습니다.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {orders.map((order) => (
-                  <Card key={order.id} className="overflow-hidden">
-                    <CardHeader className="p-4 bg-gray-50 flex flex-row justify-between items-center">
-                      <div>
-                        <p className="text-sm text-gray-500">주문번호: {order.orderNumber}</p>
-                        <p className="text-sm text-gray-500">{formatDate(order.created_at)}</p>
-                      </div>
-                      <div className={`px-3 py-1 rounded-full ${ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP].bgColor} ${ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP].color} flex items-center gap-1`}>
-                        {ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP].icon}
-                        <span className="text-sm font-medium">{ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP].label}</span>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                      <div className="flex gap-4">
-                        <div className="relative size-20 min-w-20 rounded-md overflow-hidden">
-                          {order.product.photo && order.product.photo.length > 0 ? (
-                            <Image
-                              src={`${order.product.photo[0]}/avatar`}
-                              alt={order.product.title}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              <CubeIcon className="w-8 h-8" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-medium">{order.product.title}</h3>
-                          <div className="mt-1 text-sm text-gray-500">
-                            {order.orderOptions.map((option) => (
-                              <div key={option.id} className="flex justify-between">
-                                <span>{option.optionTitle}</span>
-                                <span>{option.quantity}개</span>
-                              </div>
-                            ))}
-                          </div>
-                          <p className="mt-2 font-bold">{order.totalAmount.toLocaleString()}원</p>
-                        </div>
-                      </div>
-
-                      <Separator className="my-4" />
-
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">배송지</span>
-                          <span>{order.dAddress} {order.dDetailAddress}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">수령인</span>
-                          <span>{order.dName} ({order.dPhone})</span>
-                        </div>
-                        {order.dMemo && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-500">배송메모</span>
-                            <span>{order.dMemo}</span>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+              <p>주문 내역이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <Card key={order.id} className="overflow-hidden">
+                  <CardHeader className="p-4 bg-gray-50 flex flex-row justify-between items-center">
+                    <div>
+                      <p className="text-sm text-gray-500">주문번호: {order.orderNumber}</p>
+                      <p className="text-sm text-gray-500">{formatDate(order.created_at)}</p>
+                    </div>
+                    <div className={`px-3 py-1 rounded-full ${ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP].bgColor} ${ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP].color} flex items-center gap-1`}>
+                      {ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP].icon}
+                      <span className="text-sm font-medium">{ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP].label}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      <div className="relative size-20 min-w-20 rounded-md overflow-hidden">
+                        {order.product.photo && order.product.photo.length > 0 ? (
+                          <Image
+                            src={`${order.product.photo[0]}/avatar`}
+                            alt={order.product.title}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <CubeIcon className="w-8 h-8" />
                           </div>
                         )}
                       </div>
-                    </CardContent>
-                    <CardFooter className="p-4 bg-gray-50 flex justify-between">
-                      {(order.status === OrderStatus.SHIPPING || order.status === OrderStatus.DELIVERED) && (
-                        <Link 
-                          href={getTrackingUrl(order.orderNumber)} 
-                          target="_blank" 
-                          className="text-blue-500 text-sm flex items-center"
-                        >
-                          <TruckIcon className="w-4 h-4 mr-1" />
-                          배송조회
-                        </Link>
-                      )}
-                      {order.status === OrderStatus.PENDING_PAYMENT && (
-                        <div className="text-amber-500 text-sm flex items-center">
-                          <ClockIcon className="w-4 h-4 mr-1" />
-                          입금 확인 중
+                      <div className="flex-1">
+                        <h3 className="font-medium">{order.product.title}</h3>
+                        <div className="mt-1 text-sm text-gray-500">
+                          {order.orderOptions.map((option) => (
+                            <div key={option.id} className="flex justify-between">
+                              <span>{option.optionTitle}</span>
+                              <span>{option.quantity}개</span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="mt-2 font-bold">{order.totalAmount.toLocaleString()}원</p>
+                      </div>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">배송지</span>
+                        <span>{order.dAddress} {order.dDetailAddress}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">수령인</span>
+                        <span>{order.dName} ({order.dPhone})</span>
+                      </div>
+                      {order.dMemo && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">배송메모</span>
+                          <span>{order.dMemo}</span>
                         </div>
                       )}
-                      {order.status === OrderStatus.PREPARING && (
-                        <div className="text-blue-500 text-sm flex items-center">
-                          <CubeIcon className="w-4 h-4 mr-1" />
-                          상품 준비 중
-                        </div>
-                      )}
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => router.push(`/order/${order.id}`)}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-4 bg-gray-50 flex justify-between">
+                    {(order.status === OrderStatus.SHIPPING || order.status === OrderStatus.DELIVERED) && (
+                      <Link
+                        href={getTrackingUrl(order.orderNumber)}
+                        target="_blank"
+                        className="text-blue-500 text-sm flex items-center"
                       >
-                        주문 상세
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            )}
+                        <TruckIcon className="w-4 h-4 mr-1" />
+                        배송조회
+                      </Link>
+                    )}
+                    {order.status === OrderStatus.PENDING_PAYMENT && (
+                      <div className="text-amber-500 text-sm flex items-center">
+                        <ClockIcon className="w-4 h-4 mr-1" />
+                        입금 확인 중
+                      </div>
+                    )}
+                    {order.status === OrderStatus.PREPARING && (
+                      <div className="text-blue-500 text-sm flex items-center">
+                        <CubeIcon className="w-4 h-4 mr-1" />
+                        상품 준비 중
+                      </div>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      // onClick={() => router.push(`/order/${order.id}`)}
+                      onClick={() => alert("준비중입니다.")}
+                    >
+                      주문 상세
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
-      </main>
-    </div>
+      </main >
+    </div >
   );
 }

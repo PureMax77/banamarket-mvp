@@ -138,21 +138,21 @@ export default function SaleCard({
     <Card>
       <CardContent className="p-5 space-y-5 relative">
         {isDownloadMode && (
-          <div className="absolute top-3 left-3">
+          <div className="absolute top-3 left-5">
             <Checkbox
               checked={isSelected}
               onCheckedChange={handleCheckboxChange}
             />
           </div>
         )}
-        <div className="flex flex-col">
-          <div className="flex justify-between">
-            <span className={isDownloadMode ? "ml-6" : ""}>{product.title}</span>
-            <span>총 {orderCount}건 주문</span>
-          </div>
-          <div className="flex justify-between">
+        <div className="flex justify-between">
+          <div className="flex flex-col">
+            <span>{product.title}</span>
             <span>{startDateFormatted} ~ {endDateFormatted}</span>
-            <span>총 주문금액 {totalOrderAmount.toLocaleString()}원</span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-right">총 {orderCount}건 주문</span>
+            <span className="text-right">총 주문금액 {totalOrderAmount.toLocaleString()}원</span>
           </div>
         </div>
         <div className="flex justify-between items-center">

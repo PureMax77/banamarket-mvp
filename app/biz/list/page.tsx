@@ -209,13 +209,14 @@ export default function BizList() {
             <TabsTrigger value={TabType.ING}>판매 중</TabsTrigger>
             <TabsTrigger value={TabType.COMPLETE}>판매 완료</TabsTrigger>
           </TabsList>
-          <div className="flex justify-end items-center mt-3 mb-3">
+          <div className="flex flex-col mt-3 mb-3 gap-3" >
             {selectedTab === TabType.ING && (
               <div className="mr-auto">
                 <DownloadButton
                   isDownloadMode={isDownloadMode}
                   onDownloadModeChange={handleDownloadModeChange}
                   onSelectAll={handleSelectAll}
+                  selectedProducts={selectedProducts}
                 />
               </div>
             )}

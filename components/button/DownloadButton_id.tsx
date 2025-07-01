@@ -50,7 +50,7 @@ export default function DownloadButtonId({
                         onClick={onDownloadAll}
                         className="flex items-center justify-center px-4 py-2 rounded-md font-medium bg-yellow-400"
                     >
-                        <Download className="w-4 h-4 mr-1" />
+                        {/* <Download className="w-4 h-4 mr-1" /> */}
                         전체다운
                     </Button>
                 </>
