@@ -3,6 +3,8 @@
 import { PATH_NAME } from "@/lib/constants";
 import { redirect } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const baseUrl = "https://kauth.kakao.com/oauth/authorize";
   const params = {
