@@ -1,4 +1,4 @@
-import ChatMessagesList from "@/components/chat-messages-list";
+// import ChatMessagesList from "@/components/chat-messages-list";
 import db from "@/lib/db";
 import getSession from "@/lib/session";
 import { Prisma } from "@prisma/client";
@@ -90,3 +90,17 @@ import { notFound } from "next/navigation";
 //     />
 //   );
 // }
+
+export default function ChatRoom({
+    params,
+}: {
+    params: {
+        id: string;
+    };
+}) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <h1 className="text-2xl font-semibold text-gray-600">준비중입니다</h1>
+        </div>
+    );
+}
