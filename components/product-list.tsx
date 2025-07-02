@@ -59,9 +59,11 @@ export default function ProductList({ initialProducts }: ProductListProps) {
 
   return (
     <div className="flex flex-col">
-      {products.map((product) => (
-        <ListProduct key={product.id} {...product} />
-      ))}
+      <div className="flex flex-col min-h-screen">
+        {products.map((product) => (
+          <ListProduct key={product.id} {...product} />
+        ))}
+      </div>
       {!isLastPage && (
         <span
           ref={trigger}
